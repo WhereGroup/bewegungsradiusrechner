@@ -168,7 +168,7 @@ export default class MapLibreMap extends React.Component {
         const inputLength = inputValue.length;
         const languages = [];
         if(inputLength < 3) return [];
-        const response = await fetch(`http://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json`, { method: "GET", });
+        const response = await fetch(`https://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json`, { method: "GET", });
         const json = await  response.json();
         return json;
         
