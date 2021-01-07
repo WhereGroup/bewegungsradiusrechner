@@ -7,7 +7,7 @@ import circle from "@turf/circle";
 import centroid from "@turf/centroid";
 import buffer from "@turf/buffer";
 import lineToPolygon from "@turf/line-to-polygon";
-
+import {ReactComponent as WGLogo} from './wheregroup-logo-icon.svg';
 
 
 
@@ -257,6 +257,7 @@ export default class MapLibreMap extends React.Component {
         };
         return (<div>
             <div className="overlay">
+                
                 <Autosuggest
                     suggestions={this.state.suggestions}
                     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
@@ -267,7 +268,8 @@ export default class MapLibreMap extends React.Component {
                     inputProps={inputProps}
                 />
             </div>
-
+            <div className="footer"><a href="https://wheregroup.com/" target="_blank">   made by WhereGroup Gmbh  <WGLogo width="1rem"/> </a>   </div>
+                
 
             <div ref={el => this.mapContainer = el} className="mapContainer" />
 

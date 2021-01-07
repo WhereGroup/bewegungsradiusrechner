@@ -96,3 +96,18 @@ body {
   padding: 6px;
   font-weight: bold;
 }
+
+.footer {
+  width: 250px;
+  bottom:0;
+    right:0;
+  position: absolute;
+  bottom: 0;
+  
+ 
+  background-color: rgba(255, 255, 255, 0.8);
+ 
+  z-index: 1 !important;
+  padding: 6px;
+  font-weight: bold;
+}
