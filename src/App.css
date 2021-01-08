@@ -127,3 +127,15 @@ padding-right: 1rem;
 .whereToFind {
   margin: 4px;
 }
+.mapboxgl-canvas-container {
+
+  height: 100vh;
+
+}
+
+.hidden-map {
+  overflow: hidden;
+  height: 0;
+  width: 0;
+  position: fixed;
+}
