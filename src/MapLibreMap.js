@@ -10,6 +10,7 @@ import { ReactComponent as WGLogo } from './wheregroup-logo-icon.svg';
 import Popover from "react-bootstrap/Popover";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Button from "react-bootstrap/Button";
+import Navbar  from "react-bootstrap/Navbar"
 import Toast from "react-bootstrap/Toast"
 import { BiPrinter, BiHomeHeart } from "react-icons/bi";
 import { FiTwitter, FiGithub } from "react-icons/fi"
@@ -93,10 +94,7 @@ export default class MapLibreMap extends React.Component {
 
                 "tileSize": 256
             });
-            map.addSource("germany", {
-                "type": "geojson",
-                "data": germany
-            })
+         
 
             map.addSource("point-radius", {
                 "type": "geojson",
@@ -119,21 +117,7 @@ export default class MapLibreMap extends React.Component {
                 },
             })
 
-            map.addLayer({
-                'id': 'germany-layer',
-                'type': 'line',
-                'source': 'germany', 'layout': {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
-
-                'paint': {
-                    'line-color': 'red',
-                    'line-opacity': 1,
-                    'line-width': 2,
-
-                }
-            })
+           
             map.addLayer({
                 'id': 'fill-radius-layer',
                 'type': 'fill',
@@ -175,9 +159,12 @@ export default class MapLibreMap extends React.Component {
         const inputLength = inputValue.length;
         const languages = [];
         if (inputLength < 3) return [];
-        const response = await fetch(`https://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json`, { method: "GET", });
+        const response = await fetch(`https://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json&extratags=1`, { method: "GET", });
         const json = await response.json();
-        return json;
+        const result = json.filter((e,i,l)=>{
+            return e.extratags.linked_place !== "state"
+        })
+        return result.slice(0,5);
 
     };
 
@@ -218,6 +205,7 @@ export default class MapLibreMap extends React.Component {
 
     onSuggestionSelected = (event, suggestion) => {
         suggestion = suggestion.suggestion
+        this.setState({selected : suggestion.display_name90  })
         const data = this.getEmptyFeatureCollection();
         const sourceData = this.getEmptyFeatureCollection();;
         const centroidFromSuggestion = centroid(suggestion.geojson);
@@ -232,6 +220,7 @@ export default class MapLibreMap extends React.Component {
         this.map.getSource("point-radius").setData(data);
         this.map.getSource("search").setData(sourceData);
         this.map.flyTo({ center: centroidFromSuggestion.geometry.coordinates, essential: true });
+      
     }
 
     getEmptyFeatureCollection() {
@@ -314,26 +303,28 @@ export default class MapLibreMap extends React.Component {
             Object.defineProperty(window, 'devicePixelRatio', {
                 get: function () { return 300 / 96 }
             });
+            const offsetX = 3;
+            const offsetY = 3;
             pdf.addImage(renderMap.getCanvas().toDataURL('image/png'), 'png', 0, 0, 210, 297, null, 'FAST');
             pdf.setFillColor('white')
             pdf.rect(138, 287, 297, 10, "F")
             pdf.setFontSize(10);// optional
             pdf.text("Datenquelle: © OpenStreetMap-Mitwirkende", 140, pdf.internal.pageSize.height - 3)
             pdf.setFillColor('white')
-            pdf.rect(0, 0, 70, 15, "F")
+            pdf.rect(3, 3, 70, 13, "F")
             pdf.setFontSize(10);// optional
-            pdf.text("covid19 Bewegungsradiusrechner (15km) ", 2, 4)
+            pdf.text("covid19 Bewegungsradiusrechner (15km) ", 5, 6)
             pdf.setFontSize(10);// optional
-            pdf.text(this.state.value.slice(0, 34), 2, 8)
+            pdf.text(this.state.value.slice(0, 34), 5, 10)
             pdf.setFontSize(10);// optional
-            pdf.text("made by wheregroup", 2, 11)
+            pdf.text("made by wheregroup", 5, 14)
             pdf.setProperties({
                 title: "covid19 Bewegungsradiusrechner (15km) ",
                 subject: "covid19 Bewegungsradiusrechner (15km)",
                 creator: 'WhereGroup GmBh',
                 author: '(c)Mapbox, (c)OpenStreetMap'
             })
-
+            console.log(pdf.getFontList())
             pdf.save('Bewegungsradiusrechner.pdf');
 
 
@@ -381,12 +372,12 @@ export default class MapLibreMap extends React.Component {
             onChange: this.onChange, // called every time the input value changes
 
             type: "search",
-            placeholder: "Enter city or postcode"
+            placeholder: "Adresse oder Stadt eingeben"
         };
 
         const popover = (
             <Popover id="popover-basic">
-                <Popover.Title as="h3">made by <span>WhereGroup Gmbh </span> </Popover.Title>
+                <Popover.Title as="h3">made by <span>WhereGroup GmbH </span> </Popover.Title>
                 <Popover.Content>
                     find us here: <br />
                     <IconContext.Provider value={{ color: "black", size: "2em", className: "whereToFind" }}>
@@ -406,7 +397,7 @@ export default class MapLibreMap extends React.Component {
 
         return (<div>
           
-            <div className="overlay">
+            <Navbar  className="overlay navbar">
             <Message   />
                 <Autosuggest
                     suggestions={this.state.suggestions}
@@ -421,7 +412,7 @@ export default class MapLibreMap extends React.Component {
                 <Info />
 
 
-            </div>
+            </Navbar >
 
             <div className="footer"> <a href="https://www.openstreetmap.org/copyright" target="_blank"> © OpenStreetmap-Mitwirkende  </a> | <a href="https://wheregroup.com/impressum/" target="_blank"> Impressum </a> | <a href="https://wheregroup.com/datenschutz/" target="_blank">  Datenschutzerklärung </a>    </div>
 
