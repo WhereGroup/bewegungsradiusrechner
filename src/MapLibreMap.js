@@ -1,7 +1,6 @@
 import React from 'react';
 import mapboxgl from 'maplibre-gl';
 import '../node_modules/maplibre-gl/dist/mapbox-gl.css';
-import germany from './germany';
 import Autosuggest from 'react-autosuggest';
 import centroid from "@turf/centroid";
 import buffer from "@turf/buffer";
@@ -19,6 +18,7 @@ import { FiTwitter, FiGithub } from "react-icons/fi"
 import { IconContext } from "react-icons";
 import * as jsPDF from 'jspdf';
 import { ReactComponent as Loader } from './loadingLogo.svg';
+import CookieConsent from "react-cookie-consent";
 
 
 
@@ -168,7 +168,7 @@ export default class MapLibreMap extends React.Component {
     getSuggestions = async value => {
         const inputValue = value.trim().toLowerCase();
         const inputLength = inputValue.length;
-        const languages = [];
+        
         if (inputLength < 3) return [];
         const response = await fetch(`https://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json&extratags=1`, { method: "GET", });
         const json = await response.json();
@@ -231,7 +231,13 @@ export default class MapLibreMap extends React.Component {
 
         this.map.getSource("point-radius").setData(data);
         this.map.getSource("search").setData(sourceData);
-        this.map.fitBounds(bboxBuffer, {padding: 200});
+      
+        this.map.once('zoomend',()=>{
+            this.map.flyTo({center : centroidFromSuggestion.geometry.coordinates });
+        });
+        this.map.zoomTo(9)
+      
+
 
     }
 
@@ -375,7 +381,7 @@ export default class MapLibreMap extends React.Component {
             pdf.setFontSize(10);// optional
             pdf.addImage(logo, 'png', 5, 13+(textChunks.length*3), 3, 3, null, 'FAST');
             
-            pdf.text("wheregroup", 9, 15+(textChunks.length*3))
+           
             pdf.text("wheregroup.com", 40, 15+(textChunks.length*3))
             pdf.setProperties({
                 title: "covid19 Bewegungsradiusrechner (15km) ",
@@ -459,6 +465,10 @@ export default class MapLibreMap extends React.Component {
         );
 
         return (<div>
+              <CookieConsent buttonText="Okay"  buttonStyle={{ backgroundColor: "#B11E40", fontSize: "13px" }}>
+        Mit diesem Tool können Sie den Bewegungsradius für eine Stadt oder eine Adresse bestimmen.
+         Geben Sie dazu einfach den gewünschten Ort in das Suchfeld ein und wählen Sie einen Eintrag aus der erscheinenden Liste. 
+         Mit dem Drucksymbol können Sie die aktuelle Kartenansicht als PDF herunterladen und ausdrucken.</CookieConsent>
              <LoadingOverlay
                     active={this.state.loading}
                     spinner={<Loader />}
