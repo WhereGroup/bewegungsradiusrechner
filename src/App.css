@@ -58,7 +58,7 @@ body {
   display: block;
   position: relative;
   top: -1px;
-  width: 280px;
+  width: 240px;
   border: 1px solid #aaa;
   background-color: #fff;
   font-family: 'Open Sans', sans-serif;
@@ -101,8 +101,8 @@ body {
   
 }
 
-.overlay button {
-  margin-left: 1rem;
+.overlay button,input {
+  margin-right: 1rem;
 }
 
 .footer {
@@ -142,4 +142,9 @@ padding-right: 1rem;
 
 .popover-body {
   text-align: center;
+}
+
+._loading_overlay_wrapper {
+  width: 100vw;
+  height: 100vh;
 }
