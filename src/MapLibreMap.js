@@ -3,13 +3,18 @@ import mapboxgl from 'maplibre-gl';
 import '../node_modules/maplibre-gl/dist/mapbox-gl.css';
 import germany from './germany';
 import Autosuggest from 'react-autosuggest';
-import circle from "@turf/circle";
 import centroid from "@turf/centroid";
 import buffer from "@turf/buffer";
 import lineToPolygon from "@turf/line-to-polygon";
-import {ReactComponent as WGLogo} from './wheregroup-logo-icon.svg';
-
-
+import { ReactComponent as WGLogo } from './wheregroup-logo-icon.svg';
+import Popover from "react-bootstrap/Popover";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Button from "react-bootstrap/Button";
+import Toast from "react-bootstrap/Toast"
+import { BiPrinter, BiHomeHeart } from "react-icons/bi";
+import { FiTwitter, FiGithub } from "react-icons/fi"
+import { IconContext } from "react-icons";
+import * as jsPDF from 'jspdf';
 
 
 
@@ -24,7 +29,8 @@ export default class MapLibreMap extends React.Component {
             zoom: 8,
             map: null,
             value: '',
-            suggestions: []
+            suggestions: [],
+            showMessage: false
         };
     }
 
@@ -70,7 +76,8 @@ export default class MapLibreMap extends React.Component {
             this.setState({
                 lng: map.getCenter().lng.toFixed(4),
                 lat: map.getCenter().lat.toFixed(4),
-                zoom: map.getZoom().toFixed(2)
+                zoom: map.getZoom().toFixed(2),
+            
             });
 
         });
@@ -156,7 +163,7 @@ export default class MapLibreMap extends React.Component {
 
                     'circle-color': 'red',
                     'circle-opacity': 0.5,
-                    'circle-radius' : 2,
+                    'circle-radius': 2,
                 },
             })
         })
@@ -167,11 +174,11 @@ export default class MapLibreMap extends React.Component {
         const inputValue = value.trim().toLowerCase();
         const inputLength = inputValue.length;
         const languages = [];
-        if(inputLength < 3) return [];
+        if (inputLength < 3) return [];
         const response = await fetch(`https://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json`, { method: "GET", });
-        const json = await  response.json();
+        const json = await response.json();
         return json;
-        
+
     };
 
     // When suggestion is clicked, Autosuggest needs to populate the input
@@ -193,13 +200,13 @@ export default class MapLibreMap extends React.Component {
 
     // Autosuggest will call this function every time you need to update suggestions.
     // You already implemented this logic above, so just use it.
-    onSuggestionsFetchRequested =  ({ value }) => {
-        this.getSuggestions(value).then( suggestions => {
+    onSuggestionsFetchRequested = ({ value }) => {
+        this.getSuggestions(value).then(suggestions => {
             this.setState({
-                suggestions:  suggestions
+                suggestions: suggestions
             });
         })
-       
+
     };
 
     // Autosuggest will call this function every time you need to clear suggestions.
@@ -209,22 +216,22 @@ export default class MapLibreMap extends React.Component {
         });
     };
 
-    onSuggestionSelected = (event, suggestion)=>{
+    onSuggestionSelected = (event, suggestion) => {
         suggestion = suggestion.suggestion
         const data = this.getEmptyFeatureCollection();
-        const sourceData = this.getEmptyFeatureCollection(); ;
-        const centroidFromSuggestion =  centroid(suggestion.geojson);
-        
+        const sourceData = this.getEmptyFeatureCollection();;
+        const centroidFromSuggestion = centroid(suggestion.geojson);
+
         const gjson = suggestion.geojson === "LineString" ? lineToPolygon(suggestion.geojson) : suggestion.geojson;
-        const circleFromSuggestion = buffer(gjson, 15,{steps : 36000});
-        const origin = this.getEmptyFeature(suggestion.geojson.type,suggestion.geojson.coordinates);
-        
+        const circleFromSuggestion = buffer(gjson, 15, { steps: 36000 });
+        const origin = this.getEmptyFeature(suggestion.geojson.type, suggestion.geojson.coordinates);
+
         data.features.push(...[circleFromSuggestion])
         sourceData.features.push(...[origin])
-       
+
         this.map.getSource("point-radius").setData(data);
         this.map.getSource("search").setData(sourceData);
-        this.map.flyTo({ center: centroidFromSuggestion.geometry.coordinates,essential: true } );
+        this.map.flyTo({ center: centroidFromSuggestion.geometry.coordinates, essential: true });
     }
 
     getEmptyFeatureCollection() {
@@ -233,7 +240,7 @@ export default class MapLibreMap extends React.Component {
             "features": []
         }
     }
-    getEmptyFeature(type,coordinates) {
+    getEmptyFeature(type, coordinates) {
         return {
             "type": "Feature",
             "geometry": {
@@ -247,7 +254,128 @@ export default class MapLibreMap extends React.Component {
 
     }
 
+    print = () => {
+        if (!this.state.value) {
+            this.setState({
+               showMessage: true
+            
+            });
+
+            return false;
+        }
+        const width = 210
+        const height = 297
+        // Calculate pixel ratio
+        const actualPixelRatio = window.devicePixelRatio;
+
+        // Create map container
+        const hidden = document.createElement('div');
+        hidden.className = 'hidden-map';
+        document.body.appendChild(hidden);
+        const container = document.createElement('div');
+        container.style.width = this.toPixels(width);
+        container.style.height = this.toPixels(height);
+        hidden.appendChild(container);
+
+        //Render map
+        var renderMap = new mapboxgl.Map({
+            container: container,
+            center: this.map.getCenter(),
+            zoom: this.map.getZoom(),
+            bearing: this.map.getBearing(),
+            pitch: this.map.getPitch(),
+            interactive: false,
+            preserveDrawingBuffer: true,
+            fadeDuration: 0,
+            attributionControl: false
+        });
+        let style = this.map.getStyle();
+        for (let name in style.sources) {
+            let src = style.sources[name];
+            Object.keys(src).forEach(key => {
+                //delete properties if value is undefined.
+                // for instance, raster-dem might has undefined value in "url" and "bounds"
+                if (!src[key]) {
+                    delete src[key];
+                }
+            })
+        }
+        renderMap.setStyle(style)
+
+        renderMap.once('idle', function () {
+
+            // TO DO: It is still under development
+            const pdf = new jsPDF({
+                orientation: "p",
+                unit: "mm",
+                // format: [this_.width, this_.height],
+                compress: true
+            });
+            Object.defineProperty(window, 'devicePixelRatio', {
+                get: function () { return 300 / 96 }
+            });
+            pdf.addImage(renderMap.getCanvas().toDataURL('image/png'), 'png', 0, 0, 210, 297, null, 'FAST');
+            pdf.setFillColor('white')
+            pdf.rect(138, 287, 297, 10, "F")
+            pdf.setFontSize(10);// optional
+            pdf.text("Datenquelle: © OpenStreetMap-Mitwirkende", 140, pdf.internal.pageSize.height - 3)
+            pdf.setFillColor('white')
+            pdf.rect(0, 0, 70, 15, "F")
+            pdf.setFontSize(10);// optional
+            pdf.text("covid19 Bewegungsradiusrechner (15km) ", 2, 4)
+            pdf.setFontSize(10);// optional
+            pdf.text(this.state.value.slice(0, 34), 2, 8)
+            pdf.setFontSize(10);// optional
+            pdf.text("made by wheregroup", 2, 11)
+            pdf.setProperties({
+                title: "covid19 Bewegungsradiusrechner (15km) ",
+                subject: "covid19 Bewegungsradiusrechner (15km)",
+                creator: 'WhereGroup GmBh',
+                author: '(c)Mapbox, (c)OpenStreetMap'
+            })
+
+            pdf.save('Bewegungsradiusrechner.pdf');
+
+
+            renderMap.remove();
+            hidden.parentNode?.removeChild(hidden);
+            Object.defineProperty(window, 'devicePixelRatio', {
+                get: function () { return actualPixelRatio }
+            });
+        }.bind(this));
+    }
+
+    toPixels(length) {
+        let conversionFactor = 96;
+
+        conversionFactor /= 25.4;
+
+        return conversionFactor * length + 'px';
+    }
+
     render() {
+
+      const Message =  () =>( 
+            <div
+                style={{
+                    position: 'relative',
+                    top: 0,
+                    right: 0,
+                    float: "right",
+                    "padding-right": "3rem"
+                }}
+            >
+                <Toast onClose={() => this.setState({showMessage : false})} show={this.state.showMessage} delay={3000} autohide>
+                    <Toast.Header>
+                        <strong className="mr-auto">Hinweis</strong>
+                    </Toast.Header>
+                    <Toast.Body>Bitte suchen Sie zuerst nach einem Ort oder einer Adresse.</Toast.Body>
+                </Toast>
+               
+            </div>
+    )
+
+
         const inputProps = {
             value: this.state.value, // usually comes from the application state
             onChange: this.onChange, // called every time the input value changes
@@ -255,9 +383,31 @@ export default class MapLibreMap extends React.Component {
             type: "search",
             placeholder: "Enter city or postcode"
         };
+
+        const popover = (
+            <Popover id="popover-basic">
+                <Popover.Title as="h3">made by <span>WhereGroup Gmbh </span> </Popover.Title>
+                <Popover.Content>
+                    find us here: <br />
+                    <IconContext.Provider value={{ color: "black", size: "2em", className: "whereToFind" }}>
+                        <a href="https://wheregroup.com/" target="_blank"><BiHomeHeart value={{ size: "2em" }} /></a>
+                        <a href="https://github.com/WhereGroup" target="_blank"><FiGithub /></a>
+                        <a href="https://twitter.com/WhereGroup_com/" target="_blank"><FiTwitter /></a>
+                    </IconContext.Provider>
+                </Popover.Content>
+            </Popover>
+        );
+
+        const Info = () => (
+            <OverlayTrigger trigger="click" placement="right" overlay={popover}>
+                <Button variant="light"><WGLogo width="1rem" /></Button>
+            </OverlayTrigger>
+        );
+
         return (<div>
+          
             <div className="overlay">
-                
+            <Message   />
                 <Autosuggest
                     suggestions={this.state.suggestions}
                     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
@@ -267,9 +417,13 @@ export default class MapLibreMap extends React.Component {
                     renderSuggestion={this.renderSuggestion}
                     inputProps={inputProps}
                 />
+                <Button variant="light" onClick={this.print} ><BiPrinter></BiPrinter></Button>
+                <Info />
+
+
             </div>
-            <div className="footer"><a href="https://wheregroup.com/" target="_blank">   made by WhereGroup Gmbh  <WGLogo width="1rem"/> </a>   </div>
-                
+
+            <div className="footer"> <a href="https://www.openstreetmap.org/copyright" target="_blank"> © OpenStreetmap-Mitwirkende  </a> | <a href="https://wheregroup.com/impressum/" target="_blank"> Impressum </a> | <a href="https://wheregroup.com/datenschutz/" target="_blank">  Datenschutzerklärung </a>    </div>
 
             <div ref={el => this.mapContainer = el} className="mapContainer" />
 

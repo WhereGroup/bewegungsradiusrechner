@@ -21,11 +21,13 @@ body {
 }
 .react-autosuggest__container {
   position: relative;
+  display: inline;
+  
 }
 
 .react-autosuggest__input {
   width: 240px;
-  height: 30px;
+  height: 38px;
   padding: 10px 20px;
   font-family: 'Open Sans', sans-serif;
   font-weight: 300;
@@ -95,19 +97,33 @@ body {
   z-index: 1 !important;
   padding: 6px;
   font-weight: bold;
+
+  
+}
+
+.overlay button {
+  margin-left: 1rem;
 }
 
 .footer {
-  width: 250px;
+padding-right: 1rem;
   bottom:0;
-    right:0;
+  right:0;
   position: absolute;
-  bottom: 0;
+
   
  
-  background-color: rgba(255, 255, 255, 0.8);
- 
+  background-color: rgba(255, 255, 255, 0.4);
+  
   z-index: 1 !important;
   padding: 6px;
   font-weight: bold;
+}
+.footer a {
+  
+    color: grey;
+  
+}
+.whereToFind {
+  margin: 4px;
 }
