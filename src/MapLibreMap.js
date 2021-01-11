@@ -18,8 +18,8 @@ import { FiTwitter, FiGithub } from "react-icons/fi"
 import { IconContext } from "react-icons";
 import * as jsPDF from 'jspdf';
 import { ReactComponent as Loader } from './loadingLogo.svg';
-import CookieConsent from "react-cookie-consent";
-
+import nmConverter from "./NominatimMap.js";
+import Nav from "react-bootstrap/Nav"
 
 
 export default class MapLibreMap extends React.Component {
@@ -33,7 +33,7 @@ export default class MapLibreMap extends React.Component {
             zoom: 8,
             map: null,
             value: '',
-            selected : '',
+            selected: '',
             suggestions: [],
             showMessage: false,
             loading: false
@@ -89,7 +89,7 @@ export default class MapLibreMap extends React.Component {
         });
 
 
-        map.on('load', async() => {
+        map.on('load', async () => {
 
             const markerImage = await this.loadMarkerImage(process.env.PUBLIC_URL + '/marker.png');
 
@@ -168,26 +168,30 @@ export default class MapLibreMap extends React.Component {
     getSuggestions = async value => {
         const inputValue = value.trim().toLowerCase();
         const inputLength = inputValue.length;
-        
+
         if (inputLength < 3) return [];
-        const response = await fetch(`https://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json&extratags=1`, { method: "GET", });
+        const response = await fetch(`https://osm-search.wheregroup.com/search.php?q=${value}&polygon_geojson=1&format=json&extratags=1&accept-language=de&countrycodes=de&addressdetails=1`, { method: "GET", });
         const json = await response.json();
         const result = json.filter((e, i, l) => {
-            return e.extratags.linked_place !== "state"
+
+            return e.address.linked_place !== "state"
         })
         return result.slice(0, 5);
 
     };
 
+
+
     // When suggestion is clicked, Autosuggest needs to populate the input
     // based on the clicked suggestion. Teach Autosuggest how to calculate the
     // input value for every given suggestion.
-    getSuggestionValue = suggestion => suggestion.display_name;
+    getSuggestionValue = suggestion => { return nmConverter(suggestion.address) };
 
     // Use your imagination to render suggestions.
     renderSuggestion = suggestion => (
+
         <div>
-            {suggestion.display_name}
+            {nmConverter(suggestion.address)}
         </div>
     );
     onChange = (event, { newValue }) => {
@@ -211,7 +215,7 @@ export default class MapLibreMap extends React.Component {
     onSuggestionsClearRequested = () => {
         this.setState({
             suggestions: [],
-           
+
         });
     };
 
@@ -232,10 +236,10 @@ export default class MapLibreMap extends React.Component {
 
         this.map.getSource("point-radius").setData(data);
         this.map.getSource("search").setData(sourceData);
-      
-        
-        this.map.fitBounds(bboxBuffer,{padding: 100 });
-      
+
+
+        this.map.fitBounds(bboxBuffer, { padding: 100 });
+
 
 
     }
@@ -325,7 +329,7 @@ export default class MapLibreMap extends React.Component {
         let style = this.map.getStyle();
         for (let name in style.sources) {
             let src = style.sources[name];
-            
+
             Object.keys(src).forEach(key => {
                 //delete properties if value is undefined.
                 // for instance, raster-dem might has undefined value in "url" and "bounds"
@@ -358,44 +362,44 @@ export default class MapLibreMap extends React.Component {
             const lineHeight = 3.25;
             const textChunksSeperator = this.state.selected.split(",");
             const textChunks = [];
-            textChunksSeperator.forEach((chunk)=>{
-              const limitChunks =  chunk.match(/.{1,34}/g)
-              textChunks.push(...limitChunks)
+            textChunksSeperator.forEach((chunk) => {
+                const limitChunks = chunk.match(/.{1,34}/g)
+                textChunks.push(...limitChunks)
             })
             //Render map image
             pdf.addImage(renderMap.getCanvas().toDataURL('image/png'), 'png', 0, 0, 210, 297, null, 'FAST');
-            
+
             //Render lower left Copyright box
             pdf.setFillColor('white')
             pdf.rect(138, 287, 297, 10, "F")
             pdf.setFontSize(10);// optional
             pdf.text("Datenquelle: © OpenStreetMap-Mitwirkende", 140, pdf.internal.pageSize.height - 3)
-            
+
             //Render infobox
             pdf.setFillColor('white')
-            const infoBoxSize = (textChunks.length * lineHeight) + marginTop + marginBottom + (lineHeight*2) + innerMargin*2+textBuffer
-            
+            const infoBoxSize = (textChunks.length * lineHeight) + marginTop + marginBottom + (lineHeight * 2) + innerMargin * 2 + textBuffer
+
             pdf.rect(offsetX, 2, 66.5, infoBoxSize, "F")
-            
+
             pdf.setFontSize(10);
-            pdf.text("Bewegungsradiusrechner (15km) für:", 6, offsetY+marginTop)
-            
+            pdf.text("Bewegungsradiusrechner (15km) für:", 6, offsetY + marginTop)
+
             //Render inner infobox
-            pdf.rect(6, 7, 60,textChunks.length*lineHeight + innerMargin*2 +textBuffer )
+            pdf.rect(6, 7, 60, textChunks.length * lineHeight + innerMargin * 2 + textBuffer)
             pdf.setFontSize(10);
-           
+
             //Write out address
-            textChunks.forEach((text,i)=>{
-                pdf.text(text.trim(), 8, 10+(i*3.5)+innerMargin)
+            textChunks.forEach((text, i) => {
+                pdf.text(text.trim(), 8, 10 + (i * 3.5) + innerMargin)
             })
-           
+
             //Add WG Logo
-            pdf.addImage(logo, 'png', 5,  (offsetY+marginTop+lineHeight*2)+(textChunks.length*3)+ innerMargin*2     , 3, 3, null, 'FAST');
-            
+            pdf.addImage(logo, 'png', 5, (offsetY + marginTop + lineHeight * 2) + (textChunks.length * 3) + innerMargin * 2, 3, 3, null, 'FAST');
+
             //Add WG Url
             pdf.setFontSize(10);
-            pdf.text("wheregroup.com", 40, (offsetY+marginTop+lineHeight*2)+(textChunks.length*lineHeight)+ innerMargin*2 +textBuffer) 
-            
+            pdf.text("wheregroup.com", 40, (offsetY + marginTop + lineHeight * 2) + (textChunks.length * lineHeight) + innerMargin * 2 + textBuffer)
+
             //Set pdfs props
             pdf.setProperties({
                 title: "covid19 Bewegungsradiusrechner (15km) ",
@@ -414,7 +418,7 @@ export default class MapLibreMap extends React.Component {
             });
             this.setState({
                 loading: false
-    
+
             });
         }.bind(this));
     }
@@ -432,11 +436,11 @@ export default class MapLibreMap extends React.Component {
         const Message = () => (
             <div
                 style={{
-                    position: 'relative',
+                    position: 'absolute',
                     top: 0,
-                    right: 0,
                     float: "right",
-                    paddingRight: "3rem"
+                    margin: "auto",
+                    zIndex: 2,
                 }}
             >
                 <Toast onClose={() => this.setState({ showMessage: false })} show={this.state.showMessage} delay={3000} autohide>
@@ -448,6 +452,32 @@ export default class MapLibreMap extends React.Component {
 
             </div>
         )
+
+
+        const Tutorial = () => (
+            <div
+                style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    zIndex: 2,
+                    margin: "auto"
+
+                    
+                }}
+            >
+                <Toast onClose={() => this.setState({ showTutorial: false })} show={this.state.showTutorial} >
+                    <Toast.Header>
+                        <strong className="mr-auto">Anleitung</strong>
+                    </Toast.Header>
+                    <Toast.Body>       Mit diesem Tool können Sie den Bewegungsradius für eine Stadt oder eine Adresse bestimmen.
+                    Geben Sie dazu einfach den gewünschten Ort in das Suchfeld ein und wählen Sie einen Eintrag aus der erscheinenden Liste.
+         Mit dem Drucksymbol können Sie die aktuelle Kartenansicht als PDF herunterladen und ausdrucken.</Toast.Body>
+                </Toast>
+
+            </div>
+        )
+
+
 
 
         const inputProps = {
@@ -473,42 +503,47 @@ export default class MapLibreMap extends React.Component {
         );
 
         const Info = () => (
-            <OverlayTrigger trigger="click" placement="right" overlay={popover}>
-                <Button variant="light"><WGLogo width="1rem" /></Button>
+            <OverlayTrigger trigger="click" placement="left" overlay={popover}>
+                <Button variant="light"><WGLogo width="1em" /></Button>
             </OverlayTrigger>
         );
 
         return (<div>
-              <CookieConsent buttonText="Okay"  buttonStyle={{ backgroundColor: "#B11E40", fontSize: "13px" }}>
-        Mit diesem Tool können Sie den Bewegungsradius für eine Stadt oder eine Adresse bestimmen.
-         Geben Sie dazu einfach den gewünschten Ort in das Suchfeld ein und wählen Sie einen Eintrag aus der erscheinenden Liste. 
-         Mit dem Drucksymbol können Sie die aktuelle Kartenansicht als PDF herunterladen und ausdrucken.</CookieConsent>
-             <LoadingOverlay
-                    active={this.state.loading}
-                    spinner={<Loader />}
-                    text="Erzeuge Pdf"
-                >
-            <Navbar className="overlay navbar">
-                <Message />
-                <Autosuggest ref={this.autosuggest}
-                    suggestions={this.state.suggestions}
-                    onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-                    onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-                    getSuggestionValue={this.getSuggestionValue}
-                    onSuggestionSelected={this.onSuggestionSelected}
-                    renderSuggestion={this.renderSuggestion}
-                    inputProps={inputProps}
-                />
-                <Button variant="light" onClick={this.print} ><BiPrinter></BiPrinter></Button>
-                <Info />
 
+            <LoadingOverlay
+                active={this.state.loading}
+                spinner={<Loader />}
+                text="Erzeuge Pdf"
+            >  <Tutorial />
+            <Message />
+                <div className="overlay">
+                   
+                    <Nav as="ul" className="">
+                  
+                        <Nav.Item as="li">
+                            <Autosuggest ref={this.autosuggest}
+                                suggestions={this.state.suggestions}
+                                onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                                onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                                getSuggestionValue={this.getSuggestionValue}
+                                onSuggestionSelected={this.onSuggestionSelected}
+                                renderSuggestion={this.renderSuggestion}
+                                inputProps={inputProps}
+                            />
+                        </Nav.Item>
+                        <Nav.Item className="navbtn" as="li">
+                            <Button variant="light" onClick={this.print} ><BiPrinter></BiPrinter></Button>
+                        </Nav.Item>
+                        <Nav.Item className="navbtn" as="li">
+                            <Info />
+                        </Nav.Item>
 
-            </Navbar >
+                    </Nav >
+                </div>
+                <div className="footer"> <a href="https://www.openstreetmap.org/copyright" target="_blank"> © OpenStreetmap-Mitwirkende  </a> | <a href="https://wheregroup.com/impressum/" target="_blank"> Impressum </a> | <a href="https://wheregroup.com/datenschutz/" target="_blank">  Datenschutzerklärung </a>    </div>
 
-            <div className="footer"> <a href="https://www.openstreetmap.org/copyright" target="_blank"> © OpenStreetmap-Mitwirkende  </a> | <a href="https://wheregroup.com/impressum/" target="_blank"> Impressum </a> | <a href="https://wheregroup.com/datenschutz/" target="_blank">  Datenschutzerklärung </a>    </div>
-
-            <div ref={el => this.mapContainer = el} className="mapContainer" />
-            </LoadingOverlay>
+                <div ref={el => this.mapContainer = el} className="mapContainer" />
+            </LoadingOverlay >
         </div >)
     }
 }

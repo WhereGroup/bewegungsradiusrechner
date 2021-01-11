@@ -24,17 +24,27 @@ body {
   display: inline;
   
 }
-
+  /* For desktop: */
 @media only screen and (min-width: 768px) {
   .react-autosuggest__input{
     width: 265px !important;
   }
-  /* For desktop: */
+ 
 
+.react-autosuggest__suggestions-container--open {
+  width: 265px !important;
 }
 
+
+}
+.navbtn {
+  padding-top: 1rem;
+}
+.nav {
+  margin: auto;
+}
 .react-autosuggest__input {
-  width: 80%;
+  width: 100%;
   margin-top: 1rem;
   height: 38px;
   padding: 10px 10px;
@@ -61,13 +71,19 @@ body {
 
 .react-autosuggest__suggestions-container {
   display: none;
+  width: 90%;
+  padding-right: 3px;
+}
+
+.nav-item:not(.navbtn){
+  padding-right: 0.75rem;
 }
 
 .react-autosuggest__suggestions-container--open {
   display: block;
   position: relative;
   top: -1px;
-  width: 100%;
+  width: 80%;
   border: 1px solid #aaa;
   background-color: #fff;
   font-family: 'Open Sans', sans-serif;
@@ -96,16 +112,15 @@ body {
 
 .overlay {
   width: 100%;
-  display: inline-block;
+  display: inline-flex;
   position: absolute;
   top: 0;
-  left: 2em;
-  margin: 12px;
+  left: 0;
   background-color: transparent;
  
   z-index: 1 !important;
-  padding: 6px;
-  font-weight: bold;
+  
+
 
   
 }
