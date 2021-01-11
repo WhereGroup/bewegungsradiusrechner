@@ -26,7 +26,7 @@ export default class MapLibreMap extends React.Component {
     constructor(props) {
 
         super(props);
-
+        this.autosuggest = React.createRef()
         this.state = {
             lng: 8.6070,
             lat: 53.1409349,
@@ -217,6 +217,7 @@ export default class MapLibreMap extends React.Component {
 
     onSuggestionSelected = (event, suggestion) => {
         suggestion = suggestion.suggestion
+        this.autosuggest.current.input.blur()
         this.setState({ selected: suggestion.display_name })
         const data = this.getEmptyFeatureCollection();
         const sourceData = this.getEmptyFeatureCollection();;
@@ -232,10 +233,8 @@ export default class MapLibreMap extends React.Component {
         this.map.getSource("point-radius").setData(data);
         this.map.getSource("search").setData(sourceData);
       
-        this.map.once('zoomend',()=>{
-            this.map.flyTo({center : centroidFromSuggestion.geometry.coordinates });
-        });
-        this.map.zoomTo(9)
+        
+        this.map.fitBounds(bboxBuffer,{padding: 100 });
       
 
 
@@ -326,6 +325,7 @@ export default class MapLibreMap extends React.Component {
         let style = this.map.getStyle();
         for (let name in style.sources) {
             let src = style.sources[name];
+            
             Object.keys(src).forEach(key => {
                 //delete properties if value is undefined.
                 // for instance, raster-dem might has undefined value in "url" and "bounds"
@@ -476,7 +476,7 @@ export default class MapLibreMap extends React.Component {
                 >
             <Navbar className="overlay navbar">
                 <Message />
-                <Autosuggest
+                <Autosuggest ref={this.autosuggest}
                     suggestions={this.state.suggestions}
                     onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
                     onSuggestionsClearRequested={this.onSuggestionsClearRequested}
