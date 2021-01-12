@@ -69,7 +69,7 @@ export default class MapLibreMap extends React.Component {
 
         const map = this.map = new mapboxgl.Map({
             container: this.mapContainer,
-            style: blank,
+            style: 'https://wms.wheregroup.com/tileserver/style/osm-bright.json',
             center: [this.state.lng, this.state.lat],
             zoom: this.state.zoom,
             maxBounds: maxBounds
@@ -95,16 +95,6 @@ export default class MapLibreMap extends React.Component {
 
             map.addImage("marker", markerImage)
 
-            map.addSource("wms-osm-source", {
-                "id": "wms-osm-source",
-                "type": "raster",
-                "tiles": [
-                    'https://osm-demo.wheregroup.com/service?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&STYLES=&request=GetMap&srs=EPSG:3857&transparent=false&width=256&height=256&layers=osm&tiled=true'
-                ],
-
-                "tileSize": 256
-            });
-
 
             map.addSource("point-radius", {
                 "type": "geojson",
@@ -115,16 +105,6 @@ export default class MapLibreMap extends React.Component {
                 "type": "geojson",
                 data: this.getEmptyFeatureCollection()
 
-            })
-
-            map.addLayer({
-                'id': 'wms-test-layer',
-                'type': 'raster',
-                'source': 'wms-osm-source',
-                'paint': {},
-                'layout': {
-                    'visibility': 'visible',
-                },
             })
 
 
