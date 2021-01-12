@@ -489,7 +489,7 @@ export default class MapLibreMap extends React.Component {
             }}
         >
             <Toast  onClose={() => this.setState({ showWGInfo: false })} show={this.state.showWGInfo}  >
-                <Toast.Header as="h3">made by  Wheregroup GmbH </Toast.Header>
+                <Toast.Header as="h3">made by  WhereGroup GmbH </Toast.Header>
                 <Toast.Body>
                     find us here: <br />
                     <IconContext.Provider value={{ color: "black", size: "2em", className: "whereToFind" }}>
