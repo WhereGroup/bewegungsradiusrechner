@@ -31,8 +31,12 @@ body {
   .react-autosuggest__input{
     width: 265px !important;
   }
- 
-
+ .autosuggest-container-nav {
+   width: auto !important;
+ }
+  .navbtn  {
+    padding-top: 0 !important;
+  }
 .react-autosuggest__suggestions-container--open {
   width: 265px !important;
 }
@@ -51,6 +55,12 @@ body {
   border: 1px solid #aaa;
   border-radius: 4px;
   -webkit-appearance: none;
+}
+.navbtn {
+  padding-top: 0.5rem;
+}
+.autosuggest-container-nav {
+  width: 90%;
 }
 
 .react-autosuggest__input--focused {
@@ -72,9 +82,7 @@ body {
   padding-right: 3px;
 }
 
-.nav-item:not(.navbtn){
-  padding-right: 0.75rem;
-}
+
 
 .react-autosuggest__suggestions-container--open {
   display: block;
@@ -116,9 +124,13 @@ body {
   background-color: transparent;
   z-index: 1 !important;
   padding-top: 1rem;
-
+  padding-left: 1rem;
 
   
+}
+
+.navbar-text {
+  padding-right: 1rem;
 }
 
 .overlay button,input {

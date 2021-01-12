@@ -8,9 +8,6 @@ import bbox from "@turf/bbox";
 import LoadingOverlay from "react-loading-overlay"
 import lineToPolygon from "@turf/line-to-polygon";
 import { ReactComponent as WGLogo } from './wheregroup-logo-icon.svg';
-import { ReactComponent as WGLogoText } from './wheregroup-logo-text-white.svg';
-import Popover from "react-bootstrap/Popover";
-import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Button from "react-bootstrap/Button";
 import Toast from "react-bootstrap/Toast"
 import { BiPrinter, BiHomeHeart } from "react-icons/bi";
@@ -21,7 +18,7 @@ import * as jsPDF from 'jspdf';
 import { ReactComponent as Loader } from './loadingLogo.svg';
 import nmConverter from "./NominatimMap.js";
 import Nav from "react-bootstrap/Nav"
-
+import Navbar from "react-bootstrap/Navbar"
 
 export default class MapLibreMap extends React.Component {
     constructor(props) {
@@ -415,7 +412,7 @@ export default class MapLibreMap extends React.Component {
 
 
     toggleInfo = () => {
-        this.setState(prevState => ({ showWGInfo: !prevState.showWGInfo }))
+        this.setState(prevState => ({ showTutorial: !prevState.showTutorial }))
     }
     toggleWGInfo = () => {
         this.setState(prevState => ({ showWGInfo: !prevState.showWGInfo }))
@@ -492,7 +489,7 @@ export default class MapLibreMap extends React.Component {
             }}
         >
             <Toast  onClose={() => this.setState({ showWGInfo: false })} show={this.state.showWGInfo}  >
-                <Toast.Header as="h3">made by <span>WhereGroup GmbH </span> </Toast.Header>
+                <Toast.Header as="h3">made by  Wheregroup GmbH </Toast.Header>
                 <Toast.Body>
                     find us here: <br />
                     <IconContext.Provider value={{ color: "black", size: "2em", className: "whereToFind" }}>
@@ -522,10 +519,10 @@ export default class MapLibreMap extends React.Component {
 
                     <Nav as="ul" className="glass">
                         <Nav.Item className="navbtn" as="li">
-                            <Nav.Link >   <   WGLogo width="16px" /> Bewegungsradiusrechner</Nav.Link>
+                            <Navbar.Text >   <   WGLogo width="16px" /> Bewegungsradiusrechner</Navbar.Text>
 
                         </Nav.Item>
-                        <Nav.Item as="li">
+                        <Nav.Item className="autosuggest-container-nav" as="li">
                             <Autosuggest ref={this.autosuggest}
                                 suggestions={this.state.suggestions}
                                 onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
