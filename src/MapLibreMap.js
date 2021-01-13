@@ -454,11 +454,16 @@ export default class MapLibreMap extends React.Component {
             >
                 <Toast onClose={() => this.setState({ showTutorial: false })} show={this.state.showTutorial} >
                     <Toast.Header>
-                        <strong className="mr-auto">Anleitung</strong>
+                        <strong className="mr-auto">Information</strong>
                     </Toast.Header>
-                    <Toast.Body>       Mit diesem Tool können Sie den Bewegungsradius für eine Stadt oder eine Adresse bestimmen.
-                    Geben Sie dazu einfach den gewünschten Ort in das Suchfeld ein und wählen Sie einen Eintrag aus der erscheinenden Liste.
-         Mit dem Drucksymbol können Sie die aktuelle Kartenansicht als PDF herunterladen und ausdrucken.</Toast.Body>
+                    <Toast.Body>
+                        <span>
+                            Bundesländer und Kommunen setzen die <strong>15-Kilometer-Radius-Regel</strong> unterschiedlich um.
+                         Bitte informieren Sie sich bei der für Ihren Wohnort zuständigen Behörde. </span>
+                        <hr /><span>
+                            Mit diesem Tool können Sie den Bewegungsradius für eine Stadt oder eine Adresse bestimmen.
+                            Geben Sie dazu einfach den gewünschten Ort in das Suchfeld ein und wählen Sie einen Eintrag aus der erscheinenden Liste.
+         Mit dem Drucksymbol können Sie die aktuelle Kartenansicht als PDF herunterladen und ausdrucken. </span></Toast.Body>
                 </Toast>
 
             </div>
@@ -467,7 +472,7 @@ export default class MapLibreMap extends React.Component {
 
 
 
-        const inputProps =  {
+        const inputProps = {
             value: this.state.value, // usually comes from the application state
             onChange: this.onChange, // called every time the input value changes
 
@@ -477,33 +482,33 @@ export default class MapLibreMap extends React.Component {
 
 
 
-        const WGInfo =() => (
+        const WGInfo = () => (
             <div
-            style={{
-                position: 'absolute',
-                top: 0,
-                zIndex: 2,
-                margin: "auto"
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    zIndex: 2,
+                    margin: "auto"
 
 
-            }}
-        >
-            <Toast  onClose={() => this.setState({ showWGInfo: false })} show={this.state.showWGInfo}  >
-                <Toast.Header as="h3">made by  WhereGroup GmbH </Toast.Header>
-                <Toast.Body>
-                    find us here: <br />
-                    <IconContext.Provider value={{ color: "black", size: "2em", className: "whereToFind" }}>
-                        <a href="https://wheregroup.com/" target="_blank"><BiHomeHeart value={{ size: "2em" }} /></a>
-                        <a href="https://github.com/WhereGroup" target="_blank"><FiGithub /></a>
-                        <a href="https://twitter.com/WhereGroup_com/" target="_blank"><FiTwitter /></a>
-                    </IconContext.Provider>
-                </Toast.Body>
-            </Toast>
-            
+                }}
+            >
+                <Toast onClose={() => this.setState({ showWGInfo: false })} show={this.state.showWGInfo}  >
+                    <Toast.Header as="h3">made by  WhereGroup GmbH </Toast.Header>
+                    <Toast.Body>
+                        find us here: <br />
+                        <IconContext.Provider value={{ color: "black", size: "2em", className: "whereToFind" }}>
+                            <a href="https://wheregroup.com/" target="_blank"><BiHomeHeart value={{ size: "2em" }} /></a>
+                            <a href="https://github.com/WhereGroup" target="_blank"><FiGithub /></a>
+                            <a href="https://twitter.com/WhereGroup_com/" target="_blank"><FiTwitter /></a>
+                        </IconContext.Provider>
+                    </Toast.Body>
+                </Toast>
+
             </div>
         );
-       
-       
+
+
 
         return (<div>
 
@@ -514,7 +519,7 @@ export default class MapLibreMap extends React.Component {
             >  <Tutorial />
                 <Message />
                 <  WGInfo />
-            
+
                 <div className="overlay">
 
                     <Nav as="ul" className="glass">
