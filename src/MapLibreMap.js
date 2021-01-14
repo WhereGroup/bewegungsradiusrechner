@@ -445,7 +445,7 @@ export default class MapLibreMap extends React.Component {
             <div
                 style={{
                     position: 'absolute',
-                    bottom: 0,
+                    bottom: "25px",
                     zIndex: 2,
                     margin: "auto"
 
