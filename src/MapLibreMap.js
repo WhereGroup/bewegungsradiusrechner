@@ -207,7 +207,7 @@ export default class MapLibreMap extends React.Component {
         const centroidFromSuggestion = centroid(suggestion.geojson);
 
         const gjson = suggestion.geojson === "LineString" ? lineToPolygon(suggestion.geojson) : suggestion.geojson;
-        const circleFromSuggestion = buffer(gjson, 15, { steps: 36000 });
+        const circleFromSuggestion = buffer(gjson, 16.5, { steps: 360 });
         const origin = this.getEmptyFeature(suggestion.geojson.type, suggestion.geojson.coordinates);
         const bboxBuffer = bbox(circleFromSuggestion)
         data.features.push(...[circleFromSuggestion])
