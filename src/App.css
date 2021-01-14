@@ -6,12 +6,20 @@
   right: 0;
   left: 0;
   bottom: 0;
+  
 
 }
-
+html {
+     width: 100vw;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow-x: hidden;
+}
 
 body {
-  width: 100vh;
+
+  width: 100vw;
   height: 100%;
   overflow: hidden;
   margin: 0;
@@ -20,6 +28,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0px;
+  padding: 0px;
+  
 }
 .react-autosuggest__container {
   position: relative;
@@ -118,7 +129,7 @@ body {
 .overlay {
   width: 100%;
   display: inline-flex;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   background-color: transparent;
