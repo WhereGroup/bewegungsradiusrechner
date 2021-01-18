@@ -57,7 +57,6 @@ const MapSearchInput = (props) => {
 
   const onSuggestionSelected = (event, suggestion) => {
     suggestion = suggestion.suggestion;
-    console.log(suggestion);
     autosuggest.current.input.blur();
     setLocationValue(suggestion);
   };
@@ -66,6 +65,7 @@ const MapSearchInput = (props) => {
     <Autosuggest
       ref={autosuggest}
       suggestions={suggestions}
+      highlightFirstSuggestion={true}
       onSuggestionsFetchRequested={onSuggestionsFetchRequested}
       onSuggestionsClearRequested={onSuggestionsClearRequested}
       getSuggestionValue={getSuggestionValue}
