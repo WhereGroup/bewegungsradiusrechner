@@ -1,17 +1,14 @@
-import react, {useState, useRef} from "react";
+import react, { useState, useRef } from "react";
 import Autosuggest from "react-autosuggest";
 
 import nmConverter from "../NominatimMap.js";
-import centroid from "@turf/centroid";
-import buffer from "@turf/buffer";
-import bbox from "@turf/bbox";
-import lineToPolygon from "@turf/line-to-polygon";
 
 const MapSearchInput = (props) => {
   const locationValue = props.locationValue;
   const setLocationValue = props.setLocationValue;
+  const [inputTextValue, setInputTextValue] = useState("");
   const autosuggest = useRef(null);
-  
+
   const [suggestions, setSuggestions] = useState([]);
 
   const getSuggestions = async (value) => {
@@ -41,15 +38,15 @@ const MapSearchInput = (props) => {
   const renderSuggestion = (suggestion) => (
     <div>{nmConverter(suggestion.address)}</div>
   );
-  const onChange = (event, { newValue }) => {
-    setLocationValue(newValue);
+  const onChangeInput = (event, { newValue }) => {
+    setInputTextValue(newValue);
   };
 
   // Autosuggest will call this function every time you need to update suggestions.
   // You already implemented this logic above, so just use it.
   const onSuggestionsFetchRequested = ({ value }) => {
     getSuggestions(value).then((suggestions) => {
-      setSuggestions( suggestions );
+      setSuggestions(suggestions);
     });
   };
 
@@ -60,29 +57,9 @@ const MapSearchInput = (props) => {
 
   const onSuggestionSelected = (event, suggestion) => {
     suggestion = suggestion.suggestion;
-    this.autosuggest.current.input.blur();
-    setSuggestions(suggestion);
-    const data = this.getEmptyFeatureCollection();
-    const sourceData = this.getEmptyFeatureCollection();
-    const centroidFromSuggestion = centroid(suggestion.geojson);
-
-    const gjson =
-      suggestion.geojson === "LineString"
-        ? lineToPolygon(suggestion.geojson)
-        : suggestion.geojson;
-    const circleFromSuggestion = buffer(gjson, 16.5, { steps: 360 });
-    const origin = this.getEmptyFeature(
-      suggestion.geojson.type,
-      suggestion.geojson.coordinates
-    );
-    const bboxBuffer = bbox(circleFromSuggestion);
-    data.features.push(...[circleFromSuggestion]);
-    sourceData.features.push(...[origin]);
-
-    this.map.getSource("point-radius").setData(data);
-    this.map.getSource("search").setData(sourceData);
-
-    this.map.fitBounds(bboxBuffer, { padding: 100 });
+    console.log(suggestion);
+    autosuggest.current.input.blur();
+    setLocationValue(suggestion);
   };
 
   return (
@@ -95,9 +72,8 @@ const MapSearchInput = (props) => {
       onSuggestionSelected={onSuggestionSelected}
       renderSuggestion={renderSuggestion}
       inputProps={{
-        value: (locationValue ? locationValue : ''),
-        onChange: onChange, // called every time the input value changes
-
+        value: inputTextValue,
+        onChange: onChangeInput,
         type: "search",
         placeholder: "Adresse oder Stadt eingeben",
       }}

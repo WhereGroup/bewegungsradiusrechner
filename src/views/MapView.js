@@ -351,7 +351,10 @@ const MapView = () => {
           </Nav.Item>
         </Nav>
       </div>
-      <MapLibreMap />
+    <MapLibreMap 
+      locationValue={locationValue}
+      setLocationValue={setLocationValue}
+    />
       <LoadingOverlay
         active={loading}
         spinner={<Loader width="20%" />}

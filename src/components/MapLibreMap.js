@@ -1,6 +1,10 @@
 import React, {useState, useRef, useEffect} from "react";
 import mapboxgl from "maplibre-gl";
 import "maplibre-gl/dist/mapbox-gl.css";
+import centroid from "@turf/centroid";
+import buffer from "@turf/buffer";
+import bbox from "@turf/bbox";
+import lineToPolygon from "@turf/line-to-polygon";
 
 var map = null;
 const MapLibreMap = props => {
@@ -210,6 +214,33 @@ const MapLibreMap = props => {
         });
       });
   };
+
+  useEffect(() => {
+    console.log('locationValue has changed');
+    if(typeof locationValue.geojson !== 'undefined'){
+      const data = getEmptyFeatureCollection();
+      const sourceData = getEmptyFeatureCollection();
+      const centroidFromSuggestion = centroid(locationValue.geojson);
+
+      const gjson =
+        locationValue.geojson === "LineString"
+        ? lineToPolygon(locationValue.geojson)
+        : locationValue.geojson;
+      const circleFromSuggestion = buffer(gjson, 16.5, { steps: 360 });
+      const origin = getEmptyFeature(
+        locationValue.geojson.type,
+        locationValue.geojson.coordinates
+      );
+      const bboxBuffer = bbox(circleFromSuggestion);
+      data.features.push(...[circleFromSuggestion]);
+      sourceData.features.push(...[origin]);
+
+      map.getSource("point-radius").setData(data);
+      map.getSource("search").setData(sourceData);
+
+      map.fitBounds(bboxBuffer, { padding: 100 });
+    }
+  }, [locationValue]);
 
   return (
     <div ref={mapContainer} className="mapContainer" />
