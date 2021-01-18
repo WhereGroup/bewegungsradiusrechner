@@ -1,4 +1,4 @@
-{ 
+{
   "name": "cvoidradiuschecker",
   "license": "MIT License",
   "version": "0.1.0",
@@ -7,7 +7,7 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
-    "@turf/turf": "^5.1.6",
+    "@turf/turf": "v6.2.0-alpha.3 ",
     "@watergis/mapbox-gl-export": "^1.1.1",
     "bootstrap": "^4.5.3",
     "canvg": "^3.0.7",
@@ -19,6 +19,7 @@
     "react-bootstrap": "^1.4.0",
     "react-cookie-consent": "^6.2.1",
     "react-dom": "^17.0.1",
+    "react-i18next": "^11.8.5",
     "react-icons": "^4.1.0",
     "react-loading-overlay": "^1.0.1",
     "react-scripts": "4.0.1",

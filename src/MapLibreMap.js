@@ -28,7 +28,7 @@ export default class MapLibreMap extends React.Component {
         this.state = {
             lng: 8.6070,
             lat: 53.1409349,
-            zoom: 8,
+            zoom: 10,
             map: null,
             value: '',
             selected: '',
@@ -66,6 +66,7 @@ export default class MapLibreMap extends React.Component {
         const maxBounds = [[1.406250, 43.452919], [17.797852, 55.973798]]
 
 
+
         const map = this.map = new mapboxgl.Map({
             container: this.mapContainer,
             style: 'https://wms.wheregroup.com/tileserver/style/osm-bright.json',
@@ -89,10 +90,20 @@ export default class MapLibreMap extends React.Component {
 
 
         map.on('load', async () => {
-
+            
             const markerImage = await this.loadMarkerImage(process.env.PUBLIC_URL + '/marker.png');
+            const syringeImage = await this.loadMarkerImage(process.env.PUBLIC_URL + '/syringe.png');
+
 
             map.addImage("marker", markerImage)
+            map.addImage("syringe", syringeImage)
+
+
+            this.getVacCenters();
+            navigator.geolocation.getCurrentPosition((position) => {
+                this.setCenterToLongLat(position.coords.longitude, position.coords.latitude,);
+            });
+
 
 
             map.addSource("point-radius", {
@@ -143,6 +154,12 @@ export default class MapLibreMap extends React.Component {
         })
     }
 
+
+    setCenterToLongLat = (longitude, latitude) => {
+        this.map.flyTo({
+            center: [longitude, latitude]
+        });
+    }
 
     getSuggestions = async value => {
         const inputValue = value.trim().toLowerCase();
@@ -243,7 +260,7 @@ export default class MapLibreMap extends React.Component {
 
     }
 
-    async loadMarkerImage(src, payload) {
+    async loadMarkerImage(src) {
         let image;
 
         await new Promise(async (p, r) => {
@@ -418,6 +435,56 @@ export default class MapLibreMap extends React.Component {
         this.setState(prevState => ({ showWGInfo: !prevState.showWGInfo }))
     }
 
+
+    getVacCenters = () => {
+
+
+
+        fetch("./vaccination.json").then(response => response.json()).then(response => {
+
+            const featureCollection = this.getEmptyFeatureCollection();
+
+            response.elements.forEach((e, i, l) => {
+                const feature = this.getEmptyFeature("Point", [e.lon, e.lat]);
+                Object.assign(feature.properties, e.tags);
+                featureCollection.features.push(feature)
+            })
+
+            this.map.addSource("vaccination", {
+                type: "geojson",
+                data: featureCollection
+            })
+
+            this.map.addLayer({
+                'id': 'vaccination-point',
+                'type': 'symbol',
+                'source': 'vaccination',
+
+                'icon-image': 'marker',
+                'layout': {
+
+                    'icon-image': 'syringe',
+                    'icon-size': 0.06,
+                    "icon-allow-overlap": true,
+                },
+            })
+
+            this.map.addLayer({
+                'id': 'vaccination-label',
+                'type': 'symbol',
+                'source': 'vaccination',
+                'type': 'symbol',
+                'layout': {
+                    'text-field': ["get","name"],
+                    'text-font': ["Open Sans Regular"],
+                    'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+                    'text-radial-offset': 0.5,
+                    //'text-justify': 'auto',
+                    //'text-allow-overlap': true
+                }
+            })
+        })
+    }
     render() {
 
         const Message = () => (
