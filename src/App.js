@@ -1,14 +1,14 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import MapLibreMap from './MapLibreMap';
+import MapView from './views/MapView.js';
 
 
 
 function App() {
   return (
     <div className="App">
-      <MapLibreMap />
+      <MapView/>
     </div>
   );
 }
