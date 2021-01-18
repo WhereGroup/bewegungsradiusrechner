@@ -1,11 +1,14 @@
-import React from "react";
+import React, {useState, useRef, useEffect} from "react";
 import mapboxgl from "maplibre-gl";
 import "maplibre-gl/dist/mapbox-gl.css";
 
-export default class MapLibreMap extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
+var map = null;
+const MapLibreMap = props => {
+  const locationValue = props.locationValue;
+  const setLocationValue = props.setLocationValue;
+  const mapContainer = useRef(null);
+
+    const [state, setState] = useState({
       lng: 8.607,
       lat: 53.1409349,
       zoom: 10,
@@ -16,10 +19,9 @@ export default class MapLibreMap extends React.Component {
       showMessage: false,
       loading: false,
       showWGInfo: false,
-    };
-  }
+    });
 
-  componentDidMount() {
+  useEffect(() => {
     const blank = {
       version: 8,
       name: "Blank",
@@ -43,16 +45,17 @@ export default class MapLibreMap extends React.Component {
       [17.797852, 55.973798],
     ];
 
-    const map = (this.map = new mapboxgl.Map({
-      container: this.mapContainer,
+    map = new mapboxgl.Map({
+      container: mapContainer.current,
       style: "https://wms.wheregroup.com/tileserver/style/osm-bright.json",
-      center: [this.state.lng, this.state.lat],
-      zoom: this.state.zoom,
+      center: [state.lng, state.lat],
+      zoom: state.zoom,
       maxBounds: maxBounds,
-    }));
+    });
 
     map.on("move", () => {
-      this.setState({
+      setState({
+        ...state,
         lng: map.getCenter().lng.toFixed(4),
         lat: map.getCenter().lat.toFixed(4),
         zoom: map.getZoom().toFixed(2),
@@ -60,19 +63,20 @@ export default class MapLibreMap extends React.Component {
     });
 
     map.on("load", async () => {
-      const markerImage = await this.loadMarkerImage(
+      const markerImage = await loadMarkerImage(
         process.env.PUBLIC_URL + "/marker.png"
       );
-      const syringeImage = await this.loadMarkerImage(
+      const syringeImage = await loadMarkerImage(
         process.env.PUBLIC_URL + "/syringe.png"
       );
 
       map.addImage("marker", markerImage);
       map.addImage("syringe", syringeImage);
 
-      this.getVacCenters();
+      getVacCenters();
+
       navigator.geolocation.getCurrentPosition((position) => {
-        this.setCenterToLongLat(
+        setCenterToLongLat(
           position.coords.longitude,
           position.coords.latitude
         );
@@ -80,11 +84,11 @@ export default class MapLibreMap extends React.Component {
 
       map.addSource("point-radius", {
         type: "geojson",
-        data: this.getEmptyFeatureCollection(),
+        data: getEmptyFeatureCollection(),
       });
       map.addSource("search", {
         type: "geojson",
-        data: this.getEmptyFeatureCollection(),
+        data: getEmptyFeatureCollection(),
       });
 
       map.addLayer({
@@ -118,21 +122,21 @@ export default class MapLibreMap extends React.Component {
         },
       });
     });
-  }
+  }, []);
 
-  setCenterToLongLat = (longitude, latitude) => {
-    this.map.flyTo({
+  const setCenterToLongLat = (longitude, latitude) => {
+    map.flyTo({
       center: [longitude, latitude],
     });
   };
 
-  getEmptyFeatureCollection() {
+  const getEmptyFeatureCollection = () => {
     return {
       type: "FeatureCollection",
       features: [],
     };
   }
-  getEmptyFeature(type, coordinates) {
+  const getEmptyFeature = (type, coordinates) => {
     return {
       type: "Feature",
       geometry: {
@@ -143,13 +147,13 @@ export default class MapLibreMap extends React.Component {
         name: null,
       },
     };
-  }
+  };
 
-  async loadMarkerImage(src) {
+  const loadMarkerImage = async (src) => {
     let image;
 
     await new Promise(async (p, r) => {
-      await this.map.loadImage(src, async (error, img) => {
+      await map.loadImage(src, async (error, img) => {
         if (error) {
           r();
           throw error;
@@ -162,28 +166,27 @@ export default class MapLibreMap extends React.Component {
     return image;
   }
 
-  getVacCenters = () => {
+  const getVacCenters = () => {
     fetch("./vaccination.json")
       .then((response) => response.json())
       .then((response) => {
-        const featureCollection = this.getEmptyFeatureCollection();
+        const featureCollection = getEmptyFeatureCollection();
 
         response.elements.forEach((e, i, l) => {
-          const feature = this.getEmptyFeature("Point", [e.lon, e.lat]);
+          const feature = getEmptyFeature("Point", [e.lon, e.lat]);
           Object.assign(feature.properties, e.tags);
           featureCollection.features.push(feature);
         });
 
-        this.map.addSource("vaccination", {
+        map.addSource("vaccination", {
           type: "geojson",
           data: featureCollection,
         });
 
-        this.map.addLayer({
+        map.addLayer({
           id: "vaccination-point",
           type: "symbol",
           source: "vaccination",
-
           "icon-image": "marker",
           layout: {
             "icon-image": "syringe",
@@ -192,11 +195,10 @@ export default class MapLibreMap extends React.Component {
           },
         });
 
-        this.map.addLayer({
+        map.addLayer({
           id: "vaccination-label",
           type: "symbol",
           source: "vaccination",
-          type: "symbol",
           layout: {
             "text-field": ["get", "name"],
             "text-font": ["Open Sans Regular"],
@@ -208,9 +210,10 @@ export default class MapLibreMap extends React.Component {
         });
       });
   };
-  render() {
-    return (
-      <div ref={(el) => (this.mapContainer = el)} className="mapContainer" />
-    );
-  }
+
+  return (
+    <div ref={mapContainer} className="mapContainer" />
+  );
 }
+
+export default MapLibreMap;
