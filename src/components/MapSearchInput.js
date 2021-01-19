@@ -1,7 +1,7 @@
 import react, { useState, useRef } from "react";
 import Autosuggest from "react-autosuggest";
 
-import nmConverter from "../NominatimMap.js";
+import nmConverter from "./MapLibreMap/nominatimMap.js";
 
 const MapSearchInput = (props) => {
   const locationValue = props.locationValue;
