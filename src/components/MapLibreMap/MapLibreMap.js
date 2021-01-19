@@ -31,8 +31,22 @@ const MapLibreMap = (props) => {
   const setCreatePdfTrigger = props.setCreatePdfTrigger;
   const setLoading = props.setLoading;
 
+  const showVacSites = props.showVacSites;
+
   useEffect(() => {
-    if(createPdfTrigger){
+    if(map){
+      if(!showVacSites){
+        map.setLayoutProperty('vaccination-point', 'visibility', 'none');
+        map.setLayoutProperty('vaccination-label', 'visibility', 'none');
+      }else{
+        map.setLayoutProperty('vaccination-point', 'visibility', 'visible');
+        map.setLayoutProperty('vaccination-label', 'visibility', 'visible');
+      }
+    }
+  },[showVacSites]);
+
+  useEffect(() => {
+    if(map && createPdfTrigger){
       createPdf(map, locationValue, setLoading);
       setCreatePdfTrigger(false);
     }
@@ -81,10 +95,10 @@ const MapLibreMap = (props) => {
 
     map.on("load", async () => {
       const markerImage = await loadMarkerImage(
-        process.env.PUBLIC_URL + "/marker.png"
+        "/marker.png"
       );
       const syringeImage = await loadMarkerImage(
-        process.env.PUBLIC_URL + "/syringe.png"
+        "/syringe.png"
       );
 
       map.addImage("marker", markerImage);
@@ -206,6 +220,7 @@ const MapLibreMap = (props) => {
             "icon-image": "syringe",
             "icon-size": 0.06,
             "icon-allow-overlap": true,
+            "visibility": "none",
           },
         });
 
@@ -218,6 +233,7 @@ const MapLibreMap = (props) => {
             "text-font": ["Open Sans Regular"],
             "text-variable-anchor": ["top", "bottom", "left", "right"],
             "text-radial-offset": 0.5,
+            "visibility": "none",
             //'text-justify': 'auto',
             //'text-allow-overlap': true
           },

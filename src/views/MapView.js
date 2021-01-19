@@ -21,11 +21,14 @@ import { BsInfoCircle } from "react-icons/bs";
 const MapView = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState(false);
+
   const [locationValue, setLocationValue] = useState(null);
+  const [showVacSites, setShowVacSites] = useState(false);
 
   const [showTutorial, setShowTutorial] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [showWGInfo, setShowWGInfo] = useState(false);
+
   const [createPdfTrigger, setCreatePdfTrigger] = useState(false);
 
   useEffect(() => {
@@ -86,6 +89,14 @@ const MapView = () => {
             </Nav.Item>
             <Nav.Item className="navbtn" as="li">
               <Button
+                variant={(showVacSites?"warning":"light")}
+                onClick={() => setShowVacSites(!showVacSites)}
+              >
+                  <img src="/syringe.png" width="16" alt="" />
+              </Button>
+            </Nav.Item>
+            <Nav.Item className="navbtn" as="li">
+              <Button
                 variant="light"
                 onClick={() => setShowWGInfo(!showWGInfo)}
               >
@@ -110,6 +121,7 @@ const MapView = () => {
           createPdfTrigger={createPdfTrigger}
           setCreatePdfTrigger={setCreatePdfTrigger}
           setLoading={setLoading}
+          showVacSites={showVacSites}
         />
 
       </LoadingOverlay>
