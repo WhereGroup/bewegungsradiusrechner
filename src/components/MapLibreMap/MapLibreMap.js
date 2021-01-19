@@ -8,8 +8,9 @@ import lineToPolygon from "@turf/line-to-polygon";
 
 import createPdf from "./createPdf.js";
 
-var map = null;
 const MapLibreMap = (props) => {
+  const map = useRef(null);
+
   const locationValue = props.locationValue;
   const setLocationValue = props.setLocationValue;
   const mapContainer = useRef(null);
@@ -34,23 +35,39 @@ const MapLibreMap = (props) => {
   const showVacSites = props.showVacSites;
 
   useEffect(() => {
-    if(map){
-      if(!showVacSites){
-        map.setLayoutProperty('vaccination-point', 'visibility', 'none');
-        map.setLayoutProperty('vaccination-label', 'visibility', 'none');
-      }else{
-        map.setLayoutProperty('vaccination-point', 'visibility', 'visible');
-        map.setLayoutProperty('vaccination-label', 'visibility', 'visible');
+    if (map.current) {
+      if (!showVacSites) {
+        map.current.setLayoutProperty(
+          "vaccination-point",
+          "visibility",
+          "none"
+        );
+        map.current.setLayoutProperty(
+          "vaccination-label",
+          "visibility",
+          "none"
+        );
+      } else {
+        map.current.setLayoutProperty(
+          "vaccination-point",
+          "visibility",
+          "visible"
+        );
+        map.current.setLayoutProperty(
+          "vaccination-label",
+          "visibility",
+          "visible"
+        );
       }
     }
-  },[showVacSites]);
+  }, [showVacSites]);
 
   useEffect(() => {
-    if(map && createPdfTrigger){
-      createPdf(map, locationValue, setLoading);
+    if (map.current && createPdfTrigger) {
+      createPdf(map.current, locationValue, setLoading);
       setCreatePdfTrigger(false);
     }
-  },[createPdfTrigger]);
+  }, [createPdfTrigger]);
 
   useEffect(() => {
     const blank = {
@@ -76,7 +93,7 @@ const MapLibreMap = (props) => {
       [17.797852, 55.973798],
     ];
 
-    map = new mapboxgl.Map({
+    map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "https://wms.wheregroup.com/tileserver/style/osm-bright.json",
       center: [state.lng, state.lat],
@@ -84,25 +101,21 @@ const MapLibreMap = (props) => {
       maxBounds: maxBounds,
     });
 
-    map.on("move", () => {
+    map.current.on("move", () => {
       setState({
         ...state,
-        lng: map.getCenter().lng.toFixed(4),
-        lat: map.getCenter().lat.toFixed(4),
-        zoom: map.getZoom().toFixed(2),
+        lng: map.current.getCenter().lng.toFixed(4),
+        lat: map.current.getCenter().lat.toFixed(4),
+        zoom: map.current.getZoom().toFixed(2),
       });
     });
 
-    map.on("load", async () => {
-      const markerImage = await loadMarkerImage(
-        "/marker.png"
-      );
-      const syringeImage = await loadMarkerImage(
-        "/syringe.png"
-      );
+    map.current.on("load", async () => {
+      const markerImage = await loadMarkerImage("/marker.png");
+      const syringeImage = await loadMarkerImage("/syringe.png");
 
-      map.addImage("marker", markerImage);
-      map.addImage("syringe", syringeImage);
+      map.current.addImage("marker", markerImage);
+      map.current.addImage("syringe", syringeImage);
 
       getVacCenters();
 
@@ -110,16 +123,16 @@ const MapLibreMap = (props) => {
         setCenterToLongLat(position.coords.longitude, position.coords.latitude);
       });
 
-      map.addSource("point-radius", {
+      await map.current.addSource("point-radius", {
         type: "geojson",
         data: getEmptyFeatureCollection(),
       });
-      map.addSource("search", {
+      await map.current.addSource("search", {
         type: "geojson",
         data: getEmptyFeatureCollection(),
       });
 
-      map.addLayer({
+      await map.current.addLayer({
         id: "fill-radius-layer",
         type: "fill",
         source: "point-radius",
@@ -128,7 +141,7 @@ const MapLibreMap = (props) => {
           "fill-opacity": 0.5,
         },
       });
-      map.addLayer({
+      await map.current.addLayer({
         id: "search-fill-layer",
         type: "fill",
         source: "search",
@@ -137,7 +150,7 @@ const MapLibreMap = (props) => {
           "fill-opacity": 0.5,
         },
       });
-      map.addLayer({
+      await map.current.addLayer({
         id: "search-point",
         type: "symbol",
         source: "search",
@@ -153,7 +166,7 @@ const MapLibreMap = (props) => {
   }, []);
 
   const setCenterToLongLat = (longitude, latitude) => {
-    map.flyTo({
+    map.current.flyTo({
       center: [longitude, latitude],
     });
   };
@@ -181,7 +194,7 @@ const MapLibreMap = (props) => {
     let image;
 
     await new Promise(async (p, r) => {
-      await map.loadImage(src, async (error, img) => {
+      await map.current.loadImage(src, async (error, img) => {
         if (error) {
           r();
           throw error;
@@ -206,12 +219,12 @@ const MapLibreMap = (props) => {
           featureCollection.features.push(feature);
         });
 
-        map.addSource("vaccination", {
+        map.current.addSource("vaccination", {
           type: "geojson",
           data: featureCollection,
         });
 
-        map.addLayer({
+        map.current.addLayer({
           id: "vaccination-point",
           type: "symbol",
           source: "vaccination",
@@ -220,11 +233,11 @@ const MapLibreMap = (props) => {
             "icon-image": "syringe",
             "icon-size": 0.06,
             "icon-allow-overlap": true,
-            "visibility": "none",
+            visibility: "none",
           },
         });
 
-        map.addLayer({
+        map.current.addLayer({
           id: "vaccination-label",
           type: "symbol",
           source: "vaccination",
@@ -233,7 +246,7 @@ const MapLibreMap = (props) => {
             "text-font": ["Open Sans Regular"],
             "text-variable-anchor": ["top", "bottom", "left", "right"],
             "text-radial-offset": 0.5,
-            "visibility": "none",
+            visibility: "none",
             //'text-justify': 'auto',
             //'text-allow-overlap': true
           },
@@ -242,7 +255,11 @@ const MapLibreMap = (props) => {
   };
 
   useEffect(() => {
-    if (map && locationValue && typeof locationValue.geojson !== "undefined") {
+    if (
+      map.current &&
+      locationValue &&
+      typeof locationValue.geojson !== "undefined"
+    ) {
       const data = getEmptyFeatureCollection();
       const sourceData = getEmptyFeatureCollection();
       const centroidFromSuggestion = centroid(locationValue.geojson);
@@ -256,16 +273,22 @@ const MapLibreMap = (props) => {
         locationValue.geojson.type,
         locationValue.geojson.coordinates
       );
+
       const bboxBuffer = bbox(circleFromSuggestion);
       data.features.push(...[circleFromSuggestion]);
       sourceData.features.push(...[origin]);
 
-      map.getSource("point-radius").setData(data);
-      map.getSource("search").setData(sourceData);
+      if (
+        typeof map.current.getSource("point-radius") !== "undefined" &&
+        typeof map.current.getSource("search") !== "undefined"
+      ) {
+        map.current.getSource("point-radius").setData(data);
+        map.current.getSource("search").setData(sourceData);
+      }
 
-      map.fitBounds(bboxBuffer, { padding: 100 });
+      map.current.fitBounds(bboxBuffer, { padding: 100 });
     }
-  }, [locationValue]);
+  }, [locationValue, map]);
 
   return <div ref={mapContainer} className="mapContainer" />;
 };
