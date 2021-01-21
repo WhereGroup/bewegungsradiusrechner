@@ -54,6 +54,8 @@ const MapSearchInput = (props) => {
       }
 
       map.fitBounds(bboxBuffer, { padding: 100 });
+
+      mapContext.setMapLocation(mapLocation);
     }
   }, [mapLocation, map]);
 

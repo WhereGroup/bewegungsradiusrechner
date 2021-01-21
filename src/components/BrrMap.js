@@ -5,12 +5,11 @@ import MapContext from '../mapcomponents/MapContext';
 
 import createPdf from "./MapLibreMap/createPdf.js";
 
-import "maplibre-gl/dist/mapbox-gl.css";
-
 const BrrMap = (props) => {
 
   const mapContext = useContext(MapContext);
   const map = mapContext.map;
+  const mapLocation = mapContext.mapLocation;
 
   const mapOptions = {
     style: "https://wms.wheregroup.com/tileserver/style/osm-bright.json",
@@ -26,43 +25,15 @@ const BrrMap = (props) => {
   const createPdfTrigger = props.createPdfTrigger;
   const setCreatePdfTrigger = props.setCreatePdfTrigger;
   const setLoading = props.setLoading;
-  const showVacSites = props.showVacSites;
+
 
   useEffect(() => {
-    if (map) {
-      if (!showVacSites) {
-        map.setLayoutProperty(
-          "vaccination-point",
-          "visibility",
-          "none"
-        );
-        map.setLayoutProperty(
-          "vaccination-label",
-          "visibility",
-          "none"
-        );
-      } else {
-        map.setLayoutProperty(
-          "vaccination-point",
-          "visibility",
-          "visible"
-        );
-        map.setLayoutProperty(
-          "vaccination-label",
-          "visibility",
-          "visible"
-        );
-      }
-    }
-  }, [showVacSites]);
-
-  /**useEffect(() => {
     if (map && createPdfTrigger) {
-      createPdf(map, locationValue, setLoading);
+      createPdf(map, mapLocation, setLoading);
       setCreatePdfTrigger(false);
     }
   }, [createPdfTrigger]);
-  */
+  
 
   useEffect(() => {
     console.log('MAP EFFECT');

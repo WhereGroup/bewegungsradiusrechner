@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useRef, useEffect, useContext } from "react";
 import mapboxgl from "maplibre-gl";
 import "maplibre-gl/dist/mapbox-gl.css";
 import MapContext from './MapContext';

@@ -9,6 +9,8 @@ const MapComponentsProvider = ({ children }) => {
   const value = {
     map: map,
     setMap: setMap,
+    mapLocation: mapLocation,
+    setMapLocation: setMapLocation,
     loading: false,
   };
 
