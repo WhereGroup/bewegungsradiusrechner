@@ -4,6 +4,7 @@ import { MapContextProvider } from "./MapContext";
 const MapComponentsProvider = ({ children }) => {
   const ContextProvider = MapContextProvider;
   const [map, setMap] = useState(null);
+  const [mapLocation, setMapLocation] = useState(null);
 
   const value = {
     map: map,

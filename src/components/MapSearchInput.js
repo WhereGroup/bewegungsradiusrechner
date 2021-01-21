@@ -1,22 +1,82 @@
 import react, { useState, useEffect, useRef, useContext } from "react";
-import Autosuggest from "react-autosuggest";
-import MapContext from "./MapContext";
+import MapContext from "../mapcomponents/MapContext";
 
+import Autosuggest from "react-autosuggest";
+
+import centroid from "@turf/centroid";
+import buffer from "@turf/buffer";
+import bbox from "@turf/bbox";
+import lineToPolygon from "@turf/line-to-polygon";
 import nmConverter from "./MapLibreMap/nominatimMap.js";
 
 const MapSearchInput = (props) => {
-  const locationValue = props.locationValue;
-  const setLocationValue = props.setLocationValue;
   const [inputTextValue, setInputTextValue] = useState("");
   const autosuggest = useRef(null);
 
   const [suggestions, setSuggestions] = useState([]);
+  const [mapLocation, setMapLocation] = useState(null);
 
   const mapContext = useContext( MapContext );
+  const map = mapContext.map;
 
   useEffect(() => {
     console.log(mapContext);
-  }, [mapContext.map]);
+  }, [map]);
+
+  useEffect(() => {
+    if (
+      map &&
+      mapLocation &&
+      typeof mapLocation.geojson !== "undefined"
+    ) {
+      const data = getEmptyFeatureCollection();
+      const sourceData = getEmptyFeatureCollection();
+
+      const gjson =
+        mapLocation.geojson === "LineString"
+          ? lineToPolygon(mapLocation.geojson)
+          : mapLocation.geojson;
+      const circleFromSuggestion = buffer(gjson, 16.5, { steps: 360 });
+      const origin = getEmptyFeature(
+        mapLocation.geojson.type,
+        mapLocation.geojson.coordinates
+      );
+
+      const bboxBuffer = bbox(circleFromSuggestion);
+      data.features.push(...[circleFromSuggestion]);
+      sourceData.features.push(...[origin]);
+
+      if (
+        typeof map.getSource("point-radius") !== "undefined" &&
+        typeof map.getSource("search") !== "undefined"
+      ) {
+        map.getSource("point-radius").setData(data);
+        map.getSource("search").setData(sourceData);
+      }
+
+      map.fitBounds(bboxBuffer, { padding: 100 });
+    }
+  }, [mapLocation, map]);
+
+  const getEmptyFeatureCollection = () => {
+    return {
+      type: "FeatureCollection",
+      features: [],
+    };
+  };
+  const getEmptyFeature = (type, coordinates) => {
+    return {
+      type: "Feature",
+      geometry: {
+        type: type,
+        coordinates: coordinates,
+      },
+      properties: {
+        name: null,
+      },
+    };
+  };
+
 
   const getSuggestions = async (value) => {
     const inputValue = value.trim().toLowerCase();
@@ -65,7 +125,7 @@ const MapSearchInput = (props) => {
   const onSuggestionSelected = (event, suggestion) => {
     suggestion = suggestion.suggestion;
     autosuggest.current.input.blur();
-    setLocationValue(suggestion);
+    setMapLocation(suggestion);
   };
 
   return (

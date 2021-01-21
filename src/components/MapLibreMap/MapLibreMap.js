@@ -1,11 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import mapboxgl from "maplibre-gl";
 import "maplibre-gl/dist/mapbox-gl.css";
-import centroid from "@turf/centroid";
-import buffer from "@turf/buffer";
-import bbox from "@turf/bbox";
-import lineToPolygon from "@turf/line-to-polygon";
-import MapContext from '../MapContext';
+import MapContext from '../../mapcomponents/MapContext';
 
 import createPdf from "./createPdf.js";
 
@@ -34,8 +30,6 @@ const MapLibreMap = (props) => {
   });
 
   // TODO: should be shared using context not passing props
-  const locationValue = props.locationValue;
-  const setLocationValue = props.setLocationValue;
   const createPdfTrigger = props.createPdfTrigger;
   const setCreatePdfTrigger = props.setCreatePdfTrigger;
   const setLoading = props.setLoading;
@@ -69,12 +63,13 @@ const MapLibreMap = (props) => {
     }
   }, [showVacSites]);
 
-  useEffect(() => {
+  /**useEffect(() => {
     if (map.current && createPdfTrigger) {
       createPdf(map.current, locationValue, setLoading);
       setCreatePdfTrigger(false);
     }
   }, [createPdfTrigger]);
+  */
 
   useEffect(() => {
     const blank = {
@@ -174,12 +169,6 @@ const MapLibreMap = (props) => {
     });
   }, []);
 
-  const setCenterToLongLat = (longitude, latitude) => {
-    map.current.flyTo({
-      center: [longitude, latitude],
-    });
-  };
-
   const getEmptyFeatureCollection = () => {
     return {
       type: "FeatureCollection",
@@ -198,6 +187,14 @@ const MapLibreMap = (props) => {
       },
     };
   };
+
+
+  const setCenterToLongLat = (longitude, latitude) => {
+    map.current.flyTo({
+      center: [longitude, latitude],
+    });
+  };
+
 
   const loadMarkerImage = async (src) => {
     let image;
@@ -262,42 +259,6 @@ const MapLibreMap = (props) => {
         });
       });
   };
-
-  useEffect(() => {
-    if (
-      map.current &&
-      locationValue &&
-      typeof locationValue.geojson !== "undefined"
-    ) {
-      const data = getEmptyFeatureCollection();
-      const sourceData = getEmptyFeatureCollection();
-      const centroidFromSuggestion = centroid(locationValue.geojson);
-
-      const gjson =
-        locationValue.geojson === "LineString"
-          ? lineToPolygon(locationValue.geojson)
-          : locationValue.geojson;
-      const circleFromSuggestion = buffer(gjson, 16.5, { steps: 360 });
-      const origin = getEmptyFeature(
-        locationValue.geojson.type,
-        locationValue.geojson.coordinates
-      );
-
-      const bboxBuffer = bbox(circleFromSuggestion);
-      data.features.push(...[circleFromSuggestion]);
-      sourceData.features.push(...[origin]);
-
-      if (
-        typeof map.current.getSource("point-radius") !== "undefined" &&
-        typeof map.current.getSource("search") !== "undefined"
-      ) {
-        map.current.getSource("point-radius").setData(data);
-        map.current.getSource("search").setData(sourceData);
-      }
-
-      map.current.fitBounds(bboxBuffer, { padding: 100 });
-    }
-  }, [locationValue, map]);
 
   return <div ref={mapContainer} className="mapContainer" />;
 };

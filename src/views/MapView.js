@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import LoadingOverlay from "react-loading-overlay";
-import { ReactComponent as Loader } from "../loadingLogo.svg";
+import { ReactComponent as LoadingLogo } from "../assets/loadingLogo.svg";
 import MapLibreMap from "../components/MapLibreMap/MapLibreMap";
 import MapSearchInput from "../components/MapSearchInput";
 import WGInfo from "../components/WGInfo";
@@ -9,12 +9,12 @@ import Tutorial from "../components/Tutorial";
 
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import { ReactComponent as WGLogo } from "../wheregroup-logo-icon.svg";
-import { BiPrinter, BiHomeHeart } from "react-icons/bi";
+import { ReactComponent as WGLogo } from "../assets/wheregroup-logo-icon.svg";
+import { BiPrinter } from "react-icons/bi";
 import Button from "react-bootstrap/Button";
 import { BsInfoCircle } from "react-icons/bs";
 
-import MapComponentsProvider from "../components/MapComponentsProvider.js";
+import MapComponentsProvider from "../mapcomponents/MapComponentsProvider.js";
 
 const MapView = () => {
   const [loading, setLoading] = useState(false);
@@ -39,7 +39,7 @@ const MapView = () => {
     <MapComponentsProvider>
       <LoadingOverlay
         active={loading}
-        spinner={<Loader width="20%" />}
+        spinner={<LoadingLogo width="20%" />}
         text={loadingMsg}
       >
         <Tutorial
