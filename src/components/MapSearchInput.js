@@ -1,5 +1,6 @@
-import react, { useState, useRef } from "react";
+import react, { useState, useEffect, useRef, useContext } from "react";
 import Autosuggest from "react-autosuggest";
+import MapContext from "./MapContext";
 
 import nmConverter from "./MapLibreMap/nominatimMap.js";
 
@@ -10,6 +11,12 @@ const MapSearchInput = (props) => {
   const autosuggest = useRef(null);
 
   const [suggestions, setSuggestions] = useState([]);
+
+  const mapContext = useContext( MapContext );
+
+  useEffect(() => {
+    console.log(mapContext);
+  }, [mapContext.map]);
 
   const getSuggestions = async (value) => {
     const inputValue = value.trim().toLowerCase();

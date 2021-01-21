@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import LoadingOverlay from "react-loading-overlay";
 import { ReactComponent as Loader } from "../loadingLogo.svg";
 import MapLibreMap from "../components/MapLibreMap/MapLibreMap";
@@ -7,16 +7,14 @@ import WGInfo from "../components/WGInfo";
 import Message from "../components/Message";
 import Tutorial from "../components/Tutorial";
 
-import mapboxgl from "maplibre-gl";
-import "maplibre-gl/dist/mapbox-gl.css";
-import Toast from "react-bootstrap/Toast";
-
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import { ReactComponent as WGLogo } from "../wheregroup-logo-icon.svg";
 import { BiPrinter, BiHomeHeart } from "react-icons/bi";
 import Button from "react-bootstrap/Button";
 import { BsInfoCircle } from "react-icons/bs";
+
+import MapComponentsProvider from "../components/MapComponentsProvider.js";
 
 const MapView = () => {
   const [loading, setLoading] = useState(false);
@@ -32,14 +30,13 @@ const MapView = () => {
   const [createPdfTrigger, setCreatePdfTrigger] = useState(false);
 
   useEffect(() => {
-    if(!loading){
-      setLoadingMsg('loading');
+    if (!loading) {
+      setLoadingMsg("loading");
     }
-
   }, [loading]);
 
   return (
-    <>
+    <MapComponentsProvider>
       <LoadingOverlay
         active={loading}
         spinner={<Loader width="20%" />}
@@ -81,7 +78,7 @@ const MapView = () => {
                   setLoadingMsg("Erzeuge Pdf");
                   setLoading(true);
                   setCreatePdfTrigger(true);
-                  console.log('fertig');
+                  console.log("fertig");
                 }}
               >
                 <BiPrinter></BiPrinter>
@@ -89,10 +86,10 @@ const MapView = () => {
             </Nav.Item>
             <Nav.Item className="navbtn" as="li">
               <Button
-                variant={(showVacSites?"warning":"light")}
+                variant={showVacSites ? "warning" : "light"}
                 onClick={() => setShowVacSites(!showVacSites)}
               >
-                  <img src="/syringe.png" width="16" alt="" />
+                <img src="/syringe.png" width="16" alt="" />
               </Button>
             </Nav.Item>
             <Nav.Item className="navbtn" as="li">
@@ -123,9 +120,8 @@ const MapView = () => {
           setLoading={setLoading}
           showVacSites={showVacSites}
         />
-
       </LoadingOverlay>
-    </>
+    </MapComponentsProvider>
   );
 };
 

@@ -1,19 +1,24 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import mapboxgl from "maplibre-gl";
 import "maplibre-gl/dist/mapbox-gl.css";
 import centroid from "@turf/centroid";
 import buffer from "@turf/buffer";
 import bbox from "@turf/bbox";
 import lineToPolygon from "@turf/line-to-polygon";
+import MapContext from '../MapContext';
 
 import createPdf from "./createPdf.js";
+
+import "maplibre-gl/dist/mapbox-gl.css";
 
 const MapLibreMap = (props) => {
   const map = useRef(null);
 
-  const locationValue = props.locationValue;
-  const setLocationValue = props.setLocationValue;
   const mapContainer = useRef(null);
+
+  const mapContext = useContext(MapContext);
+
+  mapContext.loading = true;
 
   const [state, setState] = useState({
     lng: 8.607,
@@ -28,10 +33,12 @@ const MapLibreMap = (props) => {
     showWGInfo: false,
   });
 
+  // TODO: should be shared using context not passing props
+  const locationValue = props.locationValue;
+  const setLocationValue = props.setLocationValue;
   const createPdfTrigger = props.createPdfTrigger;
   const setCreatePdfTrigger = props.setCreatePdfTrigger;
   const setLoading = props.setLoading;
-
   const showVacSites = props.showVacSites;
 
   useEffect(() => {
@@ -100,6 +107,8 @@ const MapLibreMap = (props) => {
       zoom: state.zoom,
       maxBounds: maxBounds,
     });
+
+    mapContext.setMap( map.current );
 
     map.current.on("move", () => {
       setState({
