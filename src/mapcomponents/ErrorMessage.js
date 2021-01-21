@@ -1,11 +1,14 @@
-import react from "react";
+import react, { useContext } from "react";
+import MapContext from "../mapcomponents/MapContext";
+
 import Toast from "react-bootstrap/Toast";
 
-const Message = props => {
+const Message = (props) => {
   const setShowMessage = props.setShowMessage;
   const showMessage = props.showMessage;
   const body = props.body;
 
+  const mapContext = useContext(MapContext);
 
   return (
     <div
@@ -18,20 +21,18 @@ const Message = props => {
       }}
     >
       <Toast
-        onClose={() => setShowMessage(false)}
-        show={showMessage}
+        onClose={() => mapContext.setShowErrorMessage(false)}
+        show={mapContext.showErrorMessage}
         delay={3000}
         autohide
       >
         <Toast.Header>
           <strong className="mr-auto">Hinweis</strong>
         </Toast.Header>
-        <Toast.Body>
-          {body}
-        </Toast.Body>
+        <Toast.Body>{mapContext.errorMessage}</Toast.Body>
       </Toast>
     </div>
   );
-}
+};
 
 export default Message;

@@ -1,16 +1,17 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
-
-import MapLibreMap from "../mapcomponents/MapLibreMap";
+import React, { useEffect, useContext } from "react";
 import MapContext from "../mapcomponents/MapContext";
 
-import createPdf from "./MapLibreMap/createPdf.js";
+import LoadingOverlay from "react-loading-overlay";
+import { ReactComponent as LoadingLogo } from "../assets/loadingLogo.svg";
+
+import MapLibreMap from "../mapcomponents/MapLibreMap";
+import ErrorMessage from "../mapcomponents/ErrorMessage";
 
 import { getEmptyFeatureCollection } from "../mapcomponents/MapLibreMap/utils.js";
 
 const BrrMap = (props) => {
   const mapContext = useContext(MapContext);
   const map = mapContext.map;
-  const mapLocation = mapContext.mapLocation;
 
   const mapOptions = {
     style: "https://wms.wheregroup.com/tileserver/style/osm-bright.json",
@@ -22,21 +23,7 @@ const BrrMap = (props) => {
     ],
   };
 
-  // TODO: should be shared using context not passing props
-  const createPdfTrigger = props.createPdfTrigger;
-  const setCreatePdfTrigger = props.setCreatePdfTrigger;
-  const setLoading = props.setLoading;
-
   useEffect(() => {
-    if (map && createPdfTrigger) {
-      createPdf(map, mapLocation, setLoading);
-      setCreatePdfTrigger(false);
-    }
-  }, [createPdfTrigger]);
-
-  useEffect(() => {
-    console.log("MAP EFFECT");
-
     if (map) {
       map.on("move", () => {
         /*setState({
@@ -49,67 +36,62 @@ const BrrMap = (props) => {
       });
 
       map.on("load", async () => {
-        const markerImage = await loadMarkerImage("/marker.png");
-        const syringeImage = await loadMarkerImage("/syringe.png");
+        if (!map.getSource("point-radius")) {
+          const markerImage = await loadMarkerImage("/marker.png");
+          const syringeImage = await loadMarkerImage("/syringe.png");
 
-        map.addImage("marker", markerImage);
-        map.addImage("syringe", syringeImage);
+          map.addImage("marker", markerImage);
+          map.addImage("syringe", syringeImage);
 
-        navigator.geolocation.getCurrentPosition((position) => {
-          setCenterToLongLat(
-            position.coords.longitude,
-            position.coords.latitude
-          );
-        });
+          navigator.geolocation.getCurrentPosition((position) => {
+            map.flyTo({
+              center: [position.coords.longitude, position.coords.latitude],
+            });
+          });
 
-        await map.addSource("point-radius", {
-          type: "geojson",
-          data: getEmptyFeatureCollection(),
-        });
-        await map.addSource("search", {
-          type: "geojson",
-          data: getEmptyFeatureCollection(),
-        });
+          await map.addSource("point-radius", {
+            type: "geojson",
+            data: getEmptyFeatureCollection(),
+          });
+          await map.addSource("search", {
+            type: "geojson",
+            data: getEmptyFeatureCollection(),
+          });
 
-        await map.addLayer({
-          id: "fill-radius-layer",
-          type: "fill",
-          source: "point-radius",
-          paint: {
-            "fill-color": "#007cbf",
-            "fill-opacity": 0.5,
-          },
-        });
-        await map.addLayer({
-          id: "search-fill-layer",
-          type: "fill",
-          source: "search",
-          paint: {
-            "fill-color": "red",
-            "fill-opacity": 0.5,
-          },
-        });
-        await map.addLayer({
-          id: "search-point",
-          type: "symbol",
-          source: "search",
-          filter: ["==", "$type", "Point"],
-          "icon-image": "marker",
-          layout: {
+          await map.addLayer({
+            id: "fill-radius-layer",
+            type: "fill",
+            source: "point-radius",
+            paint: {
+              "fill-color": "#007cbf",
+              "fill-opacity": 0.5,
+            },
+          });
+          await map.addLayer({
+            id: "search-fill-layer",
+            type: "fill",
+            source: "search",
+            paint: {
+              "fill-color": "red",
+              "fill-opacity": 0.5,
+            },
+          });
+          await map.addLayer({
+            id: "search-point",
+            type: "symbol",
+            source: "search",
+            filter: ["==", "$type", "Point"],
             "icon-image": "marker",
-            "icon-size": 0.06,
-            "icon-allow-overlap": true,
-          },
-        });
+            layout: {
+              "icon-image": "marker",
+              "icon-size": 0.06,
+              "icon-allow-overlap": true,
+            },
+          });
+        }
       });
     }
   }, [map]);
-
-  const setCenterToLongLat = (longitude, latitude) => {
-    map.flyTo({
-      center: [longitude, latitude],
-    });
-  };
 
   const loadMarkerImage = async (src) => {
     let image;
@@ -128,7 +110,18 @@ const BrrMap = (props) => {
     return image;
   };
 
-  return <MapLibreMap options={mapOptions} />;
+  return (
+    <LoadingOverlay
+      active={mapContext.loading}
+      spinner={<LoadingLogo width="20%" />}
+      text={mapContext.loadingMsg}
+    >
+      <MapLibreMap options={mapOptions} />
+
+      <ErrorMessage
+      />
+    </LoadingOverlay>
+  );
 };
 
 export default BrrMap;

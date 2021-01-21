@@ -11,6 +11,7 @@ const toPixels = (length) => {
 };
 
 const createPdf = (map, locationValue, setLoading) => {
+  setLoading(true);
 
   const width = 210;
   const height = 297;
@@ -167,7 +168,7 @@ const createPdf = (map, locationValue, setLoading) => {
       creator: "WhereGroup GmbH",
       author: "(c)WhereGroup GmbH, (c)OpenStreetMap",
     });
-    
+
     pdf.save("Bewegungsradiusrechner.pdf");
 
     renderMap.remove();

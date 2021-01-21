@@ -16,7 +16,7 @@ const ShowVacSitesButton = () => {
   useEffect(() => {
     if (map) {
       let visibility = "visible";
-      if (showVacSites) {
+      if (!showVacSites) {
         visibility = "none";
       }
       map.setLayoutProperty("vaccination-point", "visibility", visibility);

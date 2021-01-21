@@ -19,10 +19,6 @@ const MapSearchInput = (props) => {
   const map = mapContext.map;
 
   useEffect(() => {
-    console.log(mapContext);
-  }, [map]);
-
-  useEffect(() => {
     if (
       map &&
       mapLocation &&
