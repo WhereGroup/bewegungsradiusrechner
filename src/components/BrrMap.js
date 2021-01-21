@@ -1,33 +1,26 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
-import mapboxgl from "maplibre-gl";
+
+import MapLibreMap from "../mapcomponents/MapLibreMap";
+import MapContext from '../mapcomponents/MapContext';
+
+import createPdf from "./MapLibreMap/createPdf.js";
+
 import "maplibre-gl/dist/mapbox-gl.css";
-import MapContext from '../../mapcomponents/MapContext';
 
-import createPdf from "./createPdf.js";
-
-import "maplibre-gl/dist/mapbox-gl.css";
-
-const MapLibreMap = (props) => {
-  const map = useRef(null);
-
-  const mapContainer = useRef(null);
+const BrrMap = (props) => {
 
   const mapContext = useContext(MapContext);
+  const map = mapContext.map;
 
-  mapContext.loading = true;
-
-  const [state, setState] = useState({
-    lng: 8.607,
-    lat: 53.1409349,
+  const mapOptions = {
+    style: "https://wms.wheregroup.com/tileserver/style/osm-bright.json",
+    center: [8.607, 53.1409349],
     zoom: 10,
-    map: null,
-    value: "",
-    selected: "",
-    suggestions: [],
-    showMessage: false,
-    loading: false,
-    showWGInfo: false,
-  });
+    maxBounds: [
+      [1.40625, 43.452919],
+      [17.797852, 55.973798],
+    ],
+  };
 
   // TODO: should be shared using context not passing props
   const createPdfTrigger = props.createPdfTrigger;
@@ -36,25 +29,25 @@ const MapLibreMap = (props) => {
   const showVacSites = props.showVacSites;
 
   useEffect(() => {
-    if (map.current) {
+    if (map) {
       if (!showVacSites) {
-        map.current.setLayoutProperty(
+        map.setLayoutProperty(
           "vaccination-point",
           "visibility",
           "none"
         );
-        map.current.setLayoutProperty(
+        map.setLayoutProperty(
           "vaccination-label",
           "visibility",
           "none"
         );
       } else {
-        map.current.setLayoutProperty(
+        map.setLayoutProperty(
           "vaccination-point",
           "visibility",
           "visible"
         );
-        map.current.setLayoutProperty(
+        map.setLayoutProperty(
           "vaccination-label",
           "visibility",
           "visible"
@@ -64,62 +57,34 @@ const MapLibreMap = (props) => {
   }, [showVacSites]);
 
   /**useEffect(() => {
-    if (map.current && createPdfTrigger) {
-      createPdf(map.current, locationValue, setLoading);
+    if (map && createPdfTrigger) {
+      createPdf(map, locationValue, setLoading);
       setCreatePdfTrigger(false);
     }
   }, [createPdfTrigger]);
   */
 
   useEffect(() => {
-    const blank = {
-      version: 8,
-      name: "Blank",
-      center: [0, 0],
-      zoom: 0,
-      sources: {},
-      //"sprite": window.location.origin + process.env.PUBLIC_URL + "/sprites/osm-liberty",
-      glyphs: "mapbox://fonts/openmaptiles/{fontstack}/{range}.pbf",
-      layers: [
-        {
-          id: "background",
-          type: "background",
-          paint: { "background-color": "rgba(255,255,255,1)" },
-        },
-      ],
-      id: "blank",
-    };
+    console.log('MAP EFFECT');
 
-    const maxBounds = [
-      [1.40625, 43.452919],
-      [17.797852, 55.973798],
-    ];
+    if(map) {
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "https://wms.wheregroup.com/tileserver/style/osm-bright.json",
-      center: [state.lng, state.lat],
-      zoom: state.zoom,
-      maxBounds: maxBounds,
-    });
-
-    mapContext.setMap( map.current );
-
-    map.current.on("move", () => {
-      setState({
+    map.on("move", () => {
+      /*setState({
         ...state,
-        lng: map.current.getCenter().lng.toFixed(4),
-        lat: map.current.getCenter().lat.toFixed(4),
-        zoom: map.current.getZoom().toFixed(2),
+        lng: map.getCenter().lng.toFixed(4),
+        lat: map.getCenter().lat.toFixed(4),
+        zoom: map.getZoom().toFixed(2),
       });
+      */
     });
 
-    map.current.on("load", async () => {
+    map.on("load", async () => {
       const markerImage = await loadMarkerImage("/marker.png");
       const syringeImage = await loadMarkerImage("/syringe.png");
 
-      map.current.addImage("marker", markerImage);
-      map.current.addImage("syringe", syringeImage);
+      map.addImage("marker", markerImage);
+      map.addImage("syringe", syringeImage);
 
       getVacCenters();
 
@@ -127,16 +92,16 @@ const MapLibreMap = (props) => {
         setCenterToLongLat(position.coords.longitude, position.coords.latitude);
       });
 
-      await map.current.addSource("point-radius", {
+      await map.addSource("point-radius", {
         type: "geojson",
         data: getEmptyFeatureCollection(),
       });
-      await map.current.addSource("search", {
+      await map.addSource("search", {
         type: "geojson",
         data: getEmptyFeatureCollection(),
       });
 
-      await map.current.addLayer({
+      await map.addLayer({
         id: "fill-radius-layer",
         type: "fill",
         source: "point-radius",
@@ -145,7 +110,7 @@ const MapLibreMap = (props) => {
           "fill-opacity": 0.5,
         },
       });
-      await map.current.addLayer({
+      await map.addLayer({
         id: "search-fill-layer",
         type: "fill",
         source: "search",
@@ -154,7 +119,7 @@ const MapLibreMap = (props) => {
           "fill-opacity": 0.5,
         },
       });
-      await map.current.addLayer({
+      await map.addLayer({
         id: "search-point",
         type: "symbol",
         source: "search",
@@ -167,7 +132,8 @@ const MapLibreMap = (props) => {
         },
       });
     });
-  }, []);
+    }
+  }, [ map ]);
 
   const getEmptyFeatureCollection = () => {
     return {
@@ -190,7 +156,7 @@ const MapLibreMap = (props) => {
 
 
   const setCenterToLongLat = (longitude, latitude) => {
-    map.current.flyTo({
+    map.flyTo({
       center: [longitude, latitude],
     });
   };
@@ -200,7 +166,7 @@ const MapLibreMap = (props) => {
     let image;
 
     await new Promise(async (p, r) => {
-      await map.current.loadImage(src, async (error, img) => {
+      await map.loadImage(src, async (error, img) => {
         if (error) {
           r();
           throw error;
@@ -225,12 +191,12 @@ const MapLibreMap = (props) => {
           featureCollection.features.push(feature);
         });
 
-        map.current.addSource("vaccination", {
+        map.addSource("vaccination", {
           type: "geojson",
           data: featureCollection,
         });
 
-        map.current.addLayer({
+        map.addLayer({
           id: "vaccination-point",
           type: "symbol",
           source: "vaccination",
@@ -243,7 +209,7 @@ const MapLibreMap = (props) => {
           },
         });
 
-        map.current.addLayer({
+        map.addLayer({
           id: "vaccination-label",
           type: "symbol",
           source: "vaccination",
@@ -260,7 +226,8 @@ const MapLibreMap = (props) => {
       });
   };
 
-  return <div ref={mapContainer} className="mapContainer" />;
+  return <MapLibreMap options={mapOptions} />;
 };
 
-export default MapLibreMap;
+export default BrrMap;
+

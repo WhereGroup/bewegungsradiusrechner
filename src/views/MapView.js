@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import LoadingOverlay from "react-loading-overlay";
 import { ReactComponent as LoadingLogo } from "../assets/loadingLogo.svg";
-import MapLibreMap from "../components/MapLibreMap/MapLibreMap";
+import BrrMap from "../components/BrrMap";
 import MapSearchInput from "../components/MapSearchInput";
 import WGInfo from "../components/WGInfo";
 import Message from "../components/Message";
@@ -112,7 +112,7 @@ const MapView = () => {
           </Nav>
         </div>
 
-        <MapLibreMap
+        <BrrMap
           locationValue={locationValue}
           setLocationValue={setLocationValue}
           createPdfTrigger={createPdfTrigger}

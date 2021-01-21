@@ -3,7 +3,6 @@ import MapContext from "../mapcomponents/MapContext";
 
 import Autosuggest from "react-autosuggest";
 
-import centroid from "@turf/centroid";
 import buffer from "@turf/buffer";
 import bbox from "@turf/bbox";
 import lineToPolygon from "@turf/line-to-polygon";
