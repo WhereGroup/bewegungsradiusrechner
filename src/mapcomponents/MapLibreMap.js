@@ -11,11 +11,11 @@ const MapLibreMap = (props) => {
 
   const mapContext = useContext(MapContext);
 
-  mapContext.loading = true;
-
   const mapOptions = props.options;
 
   useEffect(() => {
+    mapContext.setLoading(true);
+
     let defaultOptions = {
       lng: 8.607,
       lat: 53.1409349,

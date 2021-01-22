@@ -24,91 +24,87 @@ const BrrMap = (props) => {
   };
 
   useEffect(() => {
-    if (map) {
-      map.on("move", () => {
-        /*setState({
-        ...state,
-        lng: map.getCenter().lng.toFixed(4),
-        lat: map.getCenter().lat.toFixed(4),
-        zoom: map.getZoom().toFixed(2),
-      });
-      */
-      });
+    if (map && !map.getSource("point-radius")) {
+      const markerImages = {
+        marker: "/marker.png",
+        syringe: "/syringe.png",
+      };
 
-      map.on("load", async () => {
-        if (!map.getSource("point-radius")) {
-          const markerImage = await loadMarkerImage("/marker.png");
-          const syringeImage = await loadMarkerImage("/syringe.png");
+      let markerImagesLoaded = 0;
 
-          map.addImage("marker", markerImage);
-          map.addImage("syringe", syringeImage);
-
-          navigator.geolocation.getCurrentPosition((position) => {
-            map.flyTo({
-              center: [position.coords.longitude, position.coords.latitude],
-            });
-          });
-
-          await map.addSource("point-radius", {
-            type: "geojson",
-            data: getEmptyFeatureCollection(),
-          });
-          await map.addSource("search", {
-            type: "geojson",
-            data: getEmptyFeatureCollection(),
-          });
-
-          await map.addLayer({
-            id: "fill-radius-layer",
-            type: "fill",
-            source: "point-radius",
-            paint: {
-              "fill-color": "#007cbf",
-              "fill-opacity": 0.5,
-            },
-          });
-          await map.addLayer({
-            id: "search-fill-layer",
-            type: "fill",
-            source: "search",
-            paint: {
-              "fill-color": "red",
-              "fill-opacity": 0.5,
-            },
-          });
-          await map.addLayer({
-            id: "search-point",
-            type: "symbol",
-            source: "search",
-            filter: ["==", "$type", "Point"],
-            "icon-image": "marker",
-            layout: {
-              "icon-image": "marker",
-              "icon-size": 0.06,
-              "icon-allow-overlap": true,
-            },
-          });
+      const loadMarkerImagesAsync = (done_loading) => {
+        for (var name in markerImages) {
+          loadMarkerImage(markerImages[name], name, done_loading);
         }
+      };
+
+      const loadMarkerImage = (src, name, done_loading) => {
+        map.loadImage(src, (error, img) => {
+          if (error) {
+            throw error;
+          }
+
+          if (!map.hasImage(name)) map.addImage(name, img);
+
+          markerImagesLoaded++;
+
+          if (markerImagesLoaded === Object.keys(markerImages).length) {
+            done_loading();
+          }
+        });
+      };
+
+      loadMarkerImagesAsync(() => {
+        map.addSource("point-radius", {
+          type: "geojson",
+          data: getEmptyFeatureCollection(),
+        });
+        map.addSource("search", {
+          type: "geojson",
+          data: getEmptyFeatureCollection(),
+        });
+
+        map.addLayer({
+          id: "fill-radius-layer",
+          type: "fill",
+          source: "point-radius",
+          paint: {
+            "fill-color": "#007cbf",
+            "fill-opacity": 0.5,
+          },
+        });
+        map.addLayer({
+          id: "search-fill-layer",
+          type: "fill",
+          source: "search",
+          paint: {
+            "fill-color": "red",
+            "fill-opacity": 0.5,
+          },
+        });
+        map.addLayer({
+          id: "search-point",
+          type: "symbol",
+          source: "search",
+          filter: ["==", "$type", "Point"],
+          "icon-image": "marker",
+          layout: {
+            "icon-image": "marker",
+            "icon-size": 0.06,
+            "icon-allow-overlap": true,
+          },
+        });
+
+        mapContext.setLoading(false);
+
+        navigator.geolocation.getCurrentPosition((position) => {
+          map.flyTo({
+            center: [position.coords.longitude, position.coords.latitude],
+          });
+        });
       });
     }
   }, [map]);
-
-  const loadMarkerImage = async (src) => {
-    let image;
-
-    await new Promise(async (p, r) => {
-      await map.loadImage(src, async (error, img) => {
-        if (error) {
-          r();
-          throw error;
-        }
-        image = img;
-        p();
-      });
-    });
-
-    return image;
-  };
 
   return (
     <LoadingOverlay
@@ -118,8 +114,7 @@ const BrrMap = (props) => {
     >
       <MapLibreMap options={mapOptions} />
 
-      <ErrorMessage
-      />
+      <ErrorMessage />
     </LoadingOverlay>
   );
 };
