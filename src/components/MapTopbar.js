@@ -13,7 +13,7 @@ import ShowVacSitesButton from "./ShowVacSitesButton";
 import CreatePdfButton from "./CreatePdfButton";
 
 const MapTopbar = () => {
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(true);
   const [showWGInfo, setShowWGInfo] = useState(false);
 
   return (
@@ -26,7 +26,7 @@ const MapTopbar = () => {
           <Nav.Item className="navbtn" as="li">
             <Navbar.Text>
               {" "}
-              <WGLogo width="16px" /> Bewegungsradiusrechner
+              <WGLogo width="16px" height="21px" /> Bewegungsradiusrechner
             </Navbar.Text>
           </Nav.Item>
           <Nav.Item className="autosuggest-container-nav" as="li">
@@ -40,7 +40,7 @@ const MapTopbar = () => {
           </Nav.Item>
           <Nav.Item className="navbtn" as="li">
             <Button variant="light" onClick={() => setShowWGInfo(!showWGInfo)}>
-              <WGLogo width="16px" />
+              <WGLogo width="16px" height="21px" />
             </Button>
           </Nav.Item>
           <Nav.Item className="navbtn" as="li">

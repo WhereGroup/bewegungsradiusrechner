@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useContext } from "react";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/mapbox-gl.css";
-import MapContext from "./MapContext";
+import MapContext from "../MapContext";
 
+import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/mapbox-gl.css";
 
 const MapLibreMap = (props) => {

@@ -4,8 +4,8 @@ import MapContext from "../mapcomponents/MapContext";
 import LoadingOverlay from "react-loading-overlay";
 import { ReactComponent as LoadingLogo } from "../assets/loadingLogo.svg";
 
-import MapLibreMap from "../mapcomponents/MapLibreMap";
-import ErrorMessage from "../mapcomponents/ErrorMessage";
+import MapLibreMap from "../mapcomponents/MapLibreMap/MapLibreMap";
+import ErrorMessage from "../components/ErrorMessage";
 
 import { getEmptyFeatureCollection } from "../mapcomponents/MapLibreMap/utils.js";
 
