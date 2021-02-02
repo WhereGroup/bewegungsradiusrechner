@@ -12,16 +12,13 @@ module.exports = function (api) {
         targets: {
           browsers: [
             "last 2 versions",
-            "ie >= 11",
+            "ie >= 10",
           ]
         }
       }
     ]
   ];
   const plugins= [
-    ["@babel/plugin-proposal-decorators",{"decoratorsBeforeExport":true}],
-    ["@babel/plugin-proposal-class-properties"],
-    ["@babel/transform-runtime"]
   ];
   return {
     presets,
