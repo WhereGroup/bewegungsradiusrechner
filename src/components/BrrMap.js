@@ -1,7 +1,6 @@
 import React, { useEffect, useContext } from "react";
 import MapContext from "../mapcomponents/MapContext";
 
-import LoadingOverlay from "react-loading-overlay";
 import { ReactComponent as LoadingLogo } from "../assets/loadingLogo.svg";
 
 import MapLibreMap from "../mapcomponents/MapLibreMap/MapLibreMap";
@@ -18,8 +17,8 @@ const BrrMap = (props) => {
     center: [8.607, 53.1409349],
     zoom: 10,
     maxBounds: [
-      [1.40625, 43.452919],
-      [17.797852, 55.973798],
+      [1.40625, 40],
+      [17.797852, 60],
     ],
   };
 
@@ -107,15 +106,40 @@ const BrrMap = (props) => {
   }, [map]);
 
   return (
-    <LoadingOverlay
-      active={mapContext.loading}
-      spinner={<LoadingLogo width="20%" />}
-      text={mapContext.loadingMsg}
-    >
+    <>
+      {mapContext.loading && (
+        <div
+          style={{
+            position: "absolute",
+            height: "100%",
+            width: "100%",
+            top: "0px",
+            left: "0px",
+            display: "flex",
+            textAlign: "center",
+            fontSize: "1.2em",
+            color: "#FFF",
+            background: "rgba(0,0,0,0.7)",
+            zIndex: "800",
+          }}
+        >
+          <div
+            style={{
+              margin: "auto",
+              maxHeight: "80px",
+              width: "100%",
+              maxWidth: "360px",
+            }}
+          >
+            <LoadingLogo width="20%" style={{ marginRight: "10px" }} />
+            {mapContext.loadingMsg}
+          </div>
+        </div>
+      )}
       <MapLibreMap options={mapOptions} />
 
       <ErrorMessage />
-    </LoadingOverlay>
+    </>
   );
 };
 
